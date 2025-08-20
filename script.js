@@ -354,6 +354,37 @@ function initHelpButton() {
     }
 }
 
+// Rewards: init "Проверить" buttons (no navigation yet)
+function initRewardCheckButtons() {
+    const buttons = document.querySelectorAll('.reward-check');
+    if (!buttons.length) return;
+    const haptic = (kind = 'light') => {
+        try {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            if (tg && tg.HapticFeedback) {
+                if (kind === 'selection' && tg.HapticFeedback.selectionChanged) tg.HapticFeedback.selectionChanged();
+                else if (tg.HapticFeedback.impactOccurred) tg.HapticFeedback.impactOccurred(kind);
+            } else if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+        } catch (_) {}
+    };
+    buttons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // не переходим по ссылке блока и не скроллим
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
+            haptic('soft');
+            btn.disabled = true;
+            showNotification('Проверяем задание...');
+            setTimeout(() => {
+                btn.disabled = false;
+                showNotification('Готово. Проверка выполнена');
+            }, 700);
+        }, { passive: false });
+    });
+}
+
 // Settings button functionality
 function initSettingsButton() {
     const settingsBtn = document.querySelector('.settings-btn');
@@ -436,6 +467,15 @@ function initBottomNavigation() {
             haptic('light');
             // Всегда начинаем новую вкладку сверху
             window.scrollTo(0, 0);
+            // Кошелёк: показываем help/settings, но скрываем баланс мгновенно
+            const topLeft = document.querySelector('.top-left-actions');
+            if (topLeft) {
+                topLeft.style.visibility = '';
+            }
+            const currency = document.querySelector('.currency-display');
+            if (currency) {
+                currency.style.display = (viewId === 'view-withdraw') ? 'none' : '';
+            }
         }
     };
 
@@ -882,6 +922,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initNavigationButtons();
     initEditButton();
     initHelpButton();
+    initRewardCheckButtons();
     initSettingsButton();
     initAddCurrencyButton();
     initBottomNavigation();
@@ -1310,7 +1351,7 @@ async function init3DCoin() {
         const renderer = new WebGLRenderer({ antialias: true, alpha: true });
         renderer.outputColorSpace = SRGBColorSpace;
         renderer.toneMapping = ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.35; // ярче рендер
+        renderer.toneMappingExposure = 1.4; // ещё ярче рендер
         renderer.setClearColor(0x000000, 0);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
@@ -1319,10 +1360,10 @@ async function init3DCoin() {
         camera.position.set(0, 0, 2.6);
 
         // lights (чуть ярче + контровой)
-        const hemi = new HemisphereLight(0xffffff, 0x222233, 1.2);
-        const dir = new DirectionalLight(0xffffff, 1.15);
+        const hemi = new HemisphereLight(0xffffff, 0x222233, 1.45);
+        const dir = new DirectionalLight(0xffffff, 1.6);
         dir.position.set(3, 5, 4);
-        const rim = new DirectionalLight(0xffffff, 0.6);
+        const rim = new DirectionalLight(0xffffff, 0.9);
         rim.position.set(-3, 3, -4);
         scene.add(hemi, dir, rim);
 

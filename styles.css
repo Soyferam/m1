@@ -185,6 +185,10 @@ input, textarea {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1; /* избежать смещения по базовой линии на мобильных */
 }
 
 .add-currency-btn:hover {
@@ -1214,29 +1218,38 @@ input, textarea {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
     border-radius: 14px;
     padding: 12px;
+    text-decoration: none;
+    color: inherit;
 }
 .reward-info { display: flex; flex-direction: column; gap: 4px; }
 .reward-title { font-size: 14px; font-weight: 700; }
 .reward-desc { font-size: 12px; opacity: 0.8; }
 
-.reward-claim {
+.reward-prize { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; opacity: 0.95; }
+.reward-prize span { font-size: 12px; opacity: 0.85; }
+.reward-prize strong { font-size: 14px; font-weight: 800; }
+.reward-prize .price-icon { width: 16px; height: 16px; object-fit: contain; }
+
+.reward-check {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: rgba(255, 193, 7, 0.2);
+    justify-content: center;
     padding: 8px 12px;
-    border-radius: 16px;
-    border: 1.5px solid rgba(255, 193, 7, 0.3);
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.12);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     color: #fff;
     font-weight: 700;
+    font-size: 12px;
 }
-.reward-claim .price-icon { width: 16px; height: 16px; object-fit: contain; }
+.reward-check:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.18); }
+.reward-check:active { transform: translateY(0); }
 
 /* Leaderboard section */
 .leaderboard-section {
@@ -1378,3 +1391,38 @@ input, textarea {
 
 /* Делаем место внизу списка, чтобы 10-й игрок был виден под карточкой */
 .leaderboard-content .lb-list { padding-bottom: 0; }
+
+/* Wallet (withdraw) view */
+.wallet-section { display: flex; flex-direction: column; gap: 16px; padding: 0 0 8px 0; }
+.wallet-card {
+    border-radius: 20px;
+    padding: 18px;
+    color: #fff;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1.5px solid rgba(255,255,255,0.2);
+}
+.wallet-ton { background: linear-gradient(135deg, rgba(0, 123, 255, 0.55), rgba(0, 86, 179, 0.55)); }
+.wallet-stars { background: linear-gradient(135deg, rgba(255, 193, 7, 0.55), rgba(255, 152, 0, 0.55)); }
+.wallet-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.wallet-token-icon { width: 20px; height: 20px; object-fit: contain; }
+.wallet-token-name { font-weight: 800; opacity: 0.95; }
+.wallet-balance { font-size: 24px; font-weight: 800; text-align: center; margin: 8px 0 12px 0; }
+.wallet-actions { display: flex; gap: 10px; justify-content: center; }
+.wallet-btn {
+    padding: 10px 16px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.18);
+    color: #fff; font-weight: 700;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.wallet-btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.24); }
+.wallet-btn:active { transform: translateY(0); }
+
+.wallet-history { border-radius: 20px; border: 1.5px solid rgba(255,255,255,0.2); padding: 14px 16px; background: rgba(255,255,255,0.06); }
+.wallet-history-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+.wallet-history-list { min-height: 48px; border-radius: 12px; border: none; background: transparent; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.wallet-media-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.wallet-gif { width: 100%; height: auto; border-radius: 12px; border: none; object-fit: cover; }
+.wallet-empty-hint { text-align: center; margin-top: 4px; font-weight: 700; opacity: 0.95; }
