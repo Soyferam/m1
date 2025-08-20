@@ -1244,11 +1244,12 @@ async function init3DCoin() {
         const sizeFactor = (() => {
             const rect = stage.getBoundingClientRect();
             const w = Math.max(1, Math.floor(rect.width || 220));
-            // чем меньше контейнер, тем чувствительнее
-            return 220 / Math.min(320, w);
+            // чем меньше контейнер, тем чувствительнее, но в разумных пределах
+            const raw = 220 / Math.min(320, w);
+            return Math.max(0.95, Math.min(1.2, raw));
         })();
-        const sensY = baseSensY * (isCoarsePointer ? 2.2 : 1.0) * sizeFactor;
-        const sensX = baseSensX * (isCoarsePointer ? 2.0 : 1.0) * sizeFactor;
+        const sensY = baseSensY * (isCoarsePointer ? 1.8 : 1.0) * sizeFactor;
+        const sensX = baseSensX * (isCoarsePointer ? 1.6 : 1.0) * sizeFactor;
         const clampX = 1.35;
 
         // Лёгкий импульс вращения
@@ -1305,7 +1306,7 @@ async function init3DCoin() {
             const dy = cy - lastY;
             lastX = cx; lastY = cy;
             // Более высокая отзывчивость на мобильных/коурс-поинтерах
-            const gain = isCoarsePointer ? 1.6 : 1.2;
+            const gain = isCoarsePointer ? 1.25 : 1.1;
             velY = dx * sensY;
             velX = dy * sensX;
             model.rotation.y += velY * gain;
@@ -1334,17 +1335,17 @@ async function init3DCoin() {
 
         function animate() {
             requestAnimationFrame(animate);
-            // слабее демпфирование — дольше крутится
-            velX *= 0.98;
-            velY *= 0.985;
+            // чуть сильнее демпфирование — меньше инерции/"супер-отзывчивости"
+            velX *= 0.975;
+            velY *= 0.98;
             if (model) {
                 model.rotation.y += velY;
                 model.rotation.x = Math.max(-clampX, Math.min(clampX, model.rotation.x + velX));
                 const idleMs = performance.now() - lastInputAt;
-                if (idleMs > 1800) {
-                    const t = Math.min((idleMs - 1000) / 1200, 1);
+                if (idleMs > 900) {
+                    const t = Math.min((idleMs - 900) / 900, 1);
                     const ease = 1 - Math.pow(1 - t, 3);
-                    const k = 0.045 * ease;
+                    const k = 0.075 * ease; // быстрее возвращаем к центру
                     velX *= 0.9; velY *= 0.9;
                     model.rotation.x += (0 - model.rotation.x) * k;
                     model.rotation.y += (0 - model.rotation.y) * k;
