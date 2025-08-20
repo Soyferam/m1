@@ -83,7 +83,7 @@ body::-webkit-scrollbar {
     justify-content: space-between;
     align-items: center;
     padding: 14px;                                 /* было 20px */
-    margin-top: calc(env(safe-area-inset-top) + 16px); /* чуть ниже */
+    margin-top: calc(env(safe-area-inset-top) + 56px); /* заметно ниже */
     z-index: 1000;
 }
 
