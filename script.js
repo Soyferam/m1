@@ -390,7 +390,20 @@ function initSettingsButton() {
     const settingsBtn = document.querySelector('.settings-btn');
     if (!settingsBtn) return;
     settingsBtn.addEventListener('click', () => {
-        showNotification('Настройки скоро будут');
+        const sheet = document.getElementById('settings-modal');
+        if (sheet) {
+            sheet.style.display = 'block';
+            // Lock background scroll
+            try {
+                window.__sheetScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+                const b = document.body;
+                b.style.position = 'fixed';
+                b.style.top = `-${window.__sheetScrollY}px`;
+                b.style.left = '0';
+                b.style.right = '0';
+                b.style.width = '100%';
+            } catch(_) {}
+        }
         try {
             const tg = window.Telegram && window.Telegram.WebApp;
             if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('light');
@@ -405,6 +418,20 @@ function optimizeWalletMedia() {
     const lotties = document.querySelectorAll('.wallet-lottie[data-tgs]');
     if (window.lottie && window.pako && lotties.length) {
         lotties.forEach(el => {
+            const url = el.getAttribute('data-tgs');
+            fetch(url)
+                .then(r => r.arrayBuffer())
+                .then(buf => window.pako.inflate(new Uint8Array(buf), { to: 'string' }))
+                .then(json => {
+                    window.lottie.loadAnimation({ container: el, renderer: 'svg', loop: true, autoplay: true, animationData: JSON.parse(json) });
+                })
+                .catch(() => {});
+        });
+    }
+    // Инициализация lottie для других секций (кубок в лидерборде)
+    const lottieAny = document.querySelectorAll('.lottie[data-tgs]');
+    if (window.lottie && window.pako && lottieAny.length) {
+        lottieAny.forEach(el => {
             const url = el.getAttribute('data-tgs');
             fetch(url)
                 .then(r => r.arrayBuffer())
@@ -973,6 +1000,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Попытка автоматически использовать сжатые вебп, если они есть
     optimizeWalletMedia();
+
+    // Settings sheet interactions
+    (function initSettingsSheet(){
+        const overlay = document.getElementById('settings-modal');
+        if (!overlay) return;
+        const content = overlay.querySelector('.sheet-content');
+        const close = () => {
+            overlay.style.display = 'none';
+            // Unlock background scroll and restore position
+            try {
+                const b = document.body;
+                const y = window.__sheetScrollY || 0;
+                b.style.position = '';
+                b.style.top = '';
+                b.style.left = '';
+                b.style.right = '';
+                b.style.width = '';
+                window.scrollTo(0, y);
+            } catch(_) {}
+        };
+        // Закрытие по клику вне
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        // Блокируем скролл на оверлее
+        overlay.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+        overlay.addEventListener('wheel', (e) => { e.preventDefault(); }, { passive: false });
+        // Свайп вниз для закрытия
+        let startY = 0, dy = 0, dragging = false;
+        content.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
+        content.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) content.style.transform = `translateY(${dy}px)`; }, { passive: true });
+        content.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) close(); content.style.transform = ''; }, { passive: true });
+        // Языки
+        content.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
+            const lang = btn.getAttribute('data-lang');
+            showNotification(`Язык: ${lang}`);
+        }));
+        // Поддержка
+        const sup = document.getElementById('support-btn');
+        sup?.addEventListener('click', () => {
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                tg?.openTelegramLink?.('https://t.me/your_support_here');
+            } catch(_) {}
+        });
+    })();
 
     // Глобальная защита: отключаем pinch-zoom/масштабирование и системные жесты браузера
     const preventMultiTouch = (e) => {
@@ -1592,9 +1663,22 @@ function populateLeaderboard() {
     if (!lb) return;
 
     // 1 место сверху, далее 2..10; значения убывают вниз
+    const sampleNicks = [
+        'crypto_kid','DeFiNinja','ton_whale','satoshi_rus','airdrop_hunter','chain_monk','Mr.Mint','NebulaCat','MoonRider','hodl_panda',
+        'alphaWolf','MetaBear','PixelFox','StormBringer','ice_dragon','nova_girl','xXx_tg_xXx','KappaMan','rippledude','arbiter_bot'
+    ];
+    const rndNick = () => sampleNicks[Math.floor(Math.random()*sampleNicks.length)] + '_' + Math.random().toString(36).slice(2,4);
+
+    const placeMedal = (place) => {
+        if (place === 1) return '🥇';
+        if (place === 2) return '🥈';
+        if (place === 3) return '🥉';
+        return `#${place}`;
+    };
+
     const players = Array.from({ length: 10 }).map((_, i) => {
         const place = i + 1; // 1..10
-        const nick = `player_${(place).toString().padStart(2,'0')}`;
+        const nick = rndNick();
         const tokensTop = 10500; // верхняя планка
         const profitTop = 2250;  // верхняя планка $, для примера
         const tokens = Math.max(100, Math.floor(tokensTop - i * 950));
@@ -1606,46 +1690,37 @@ function populateLeaderboard() {
     players.forEach(p => {
         const row = document.createElement('div');
         row.className = 'lb-item';
-        row.innerHTML = `<span>${p.nick}</span><span>${p.tokens}</span><span>$${p.profit}</span><span>#${p.place}</span>`;
+        row.innerHTML = `<span>${p.nick}</span><span>${p.tokens}</span><span>$${p.profit}</span><span>${placeMedal(p.place)}</span>`;
         lb.appendChild(row);
     });
 }
 
 function populateReferrals() {
     const list = document.getElementById('ref-list');
-    const genBtn = document.getElementById('generate-ref');
-    const linkBox = document.getElementById('ref-link');
-    if (!list || !genBtn || !linkBox) return;
+    const totalSumEl = document.querySelector('.ref-total-sum');
+    if (!list) return;
 
-    const friends = Array.from({ length: 8 }).map((_, i) => {
-        const nick = `friend_${Math.random().toString(36).slice(2, 7)}`;
-        const profit = (10 + Math.random() * 300).toFixed(2);
-        return { nick, profit };
-    });
+    const tgNames = ['alexei','maria','nikita','olga','sergei','dmitry','irina','andrey','viktor','inna','polina','arkady','egor','sveta','kira','lev'];
+    const rndNick = () => '@' + tgNames[Math.floor(Math.random()*tgNames.length)] + '_' + Math.random().toString(36).slice(2,4);
+    const friends = Array.from({ length: 8 }).map((_) => ({ nick: rndNick(), profit: (10 + Math.random() * 300).toFixed(2) }));
 
     list.innerHTML = '';
+    let total = 0;
     friends.forEach(f => {
         const row = document.createElement('div');
         row.className = 'ref-item';
         row.innerHTML = `<span>${f.nick}</span><span>$${f.profit}</span>`;
         list.appendChild(row);
+        total += parseFloat(f.profit);
     });
-
-    genBtn.addEventListener('click', () => {
-        // простая генерация ссылки
-        const code = Math.random().toString(36).slice(2, 10);
-        const url = `${location.origin}${location.pathname}?ref=${code}`;
-        linkBox.textContent = url;
-        linkBox.style.display = 'block';
-        // копирование в буфер
-        navigator.clipboard?.writeText(url).catch(() => {});
-        showNotification('Реферальная ссылка сгенерирована и скопирована');
-    });
+    if (totalSumEl) totalSumEl.textContent = `$${total.toFixed(2)}`;
 }
 
 function initLeaderboardShare() {
     const btnTop = document.getElementById('lb-share');
     const btnBottom = document.getElementById('lb-bottom-share');
+    if (btnTop) btnTop.textContent = 'Поделиться результатом';
+    if (btnBottom) btnBottom.textContent = 'Поделиться результатом';
     const tokensEl = document.getElementById('lb-my-tokens') || document.getElementById('lb-bottom-tokens');
     const profitEl = document.getElementById('lb-my-profit') || document.getElementById('lb-bottom-profit');
 

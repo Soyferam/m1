@@ -181,10 +181,13 @@
                     </div>
                 </section>
                 <section id="view-leaderboard" class="view" aria-hidden="true">
+                    <div class="lb-cup">
+                        <div class="lottie" data-tgs="assets/cup.tgs" aria-label="Кубок"></div>
+                    </div>
                     <div class="leaderboard-section">
                         <div class="leaderboard-head">
                             <div class="leaderboard-head-top">
-                                <h2>Лидерборд</h2>
+                                <h2>Таблица лидеров</h2>
                                 <div class="leaderboard-currency">
                                     <span>Баланс: 12 340</span>
                                     <img src="assets/coin-icon.png" alt="Монеты" class="coin-icon">
@@ -204,27 +207,37 @@
 
                     <!-- Объединённая нижняя плашка личного профита -->
                     <div class="lb-bottom-card" role="region" aria-label="Ваш профиль">
-                        <img src="assets/snake-blue.png" alt="Аватар" class="lb-bottom-avatar" />
+                        <span id="lb-bottom-nick" class="lb-badge">@you</span>
                         <span id="lb-bottom-tokens" class="lb-badge">2742</span>
                         <span id="lb-bottom-profit" class="lb-badge">$318.20</span>
                         <span id="lb-bottom-place" class="lb-badge">#742</span>
-                        <button id="lb-bottom-share" class="lb-share-btn">Поделиться</button>
+                        <button id="lb-bottom-share" class="lb-share-btn">Поделиться результатом</button>
                     </div>
                 </section>
                 <section id="view-referrals" class="view" aria-hidden="true">
+                    <div class="ref-cup">
+                        <div class="lottie" data-tgs="assets/money.tgs" aria-label="Награда"></div>
+                    </div>
                     <div class="referrals-section">
                         <div class="referrals-head">
-                            <h2>Приводи друзей и получай % с их профита!</h2>
-                            <button id="generate-ref" class="ref-generate-btn">Сгенерировать персональную ссылку</button>
+                            <h2>Ваши рефералы</h2>
                             <div id="ref-link" class="ref-link" style="display:none;"></div>
                         </div>
                         <div class="referrals-content">
-                            <div class="ref-header-row">
+                            <div class="ref-total">
+                                <div class="ref-total-head">Всего заработано:</div>
+                                <div class="ref-total-sum">$0.00</div>
+                            </div>
+                            <div class="ref-header-row plain">
                                 <span>Ник</span>
-                                <span>Профит с друга</span>
+                                <span>Профит $</span>
                             </div>
                             <div id="ref-list" class="ref-list"></div>
                         </div>
+                    </div>
+                    <div class="ref-bottom-card">
+                        <div class="ref-bottom-text">Приводи друзей и получай профит</div>
+                        <button id="ref-bottom-share" class="ref-share-btn">Поделиться реферальной ссылкой</button>
                     </div>
                 </section>
                 <section id="view-rewards" class="view" aria-hidden="true">
@@ -392,6 +405,39 @@
                 <button class="modal-play-btn modal-play-ton">
                     <span id="modal-ton-text">Играть 1</span>
                     <img src="assets/ton-icon.png" alt="TON" class="play-icon">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Bottom Sheet -->
+    <div id="settings-modal" class="sheet-overlay" style="display:none;">
+        <div class="sheet-content settings-sheet" role="dialog" aria-modal="true" aria-label="Настройки">
+            <div class="sheet-grabber" aria-hidden="true"></div>
+            <h3 class="sheet-title">Настройки</h3>
+
+            <div class="settings-section">
+                <div class="settings-label">Язык</div>
+                <div class="lang-row">
+                    <button class="lang-option" data-lang="en">
+                        <img src="assets/flag-en.png" alt="English">
+                        <span>English</span>
+                    </button>
+                    <button class="lang-option" data-lang="ru">
+                        <img src="assets/flag-ru.png" alt="Русский">
+                        <span>Русский</span>
+                    </button>
+                    <button class="lang-option" data-lang="zh">
+                        <img src="assets/flag-cn.png" alt="中文">
+                        <span>中文</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <button class="support-btn" id="support-btn">
+                    <img src="assets/support.png" alt="Поддержка">
+                    <span>Связаться с нами</span>
                 </button>
             </div>
         </div>

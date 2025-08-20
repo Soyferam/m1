@@ -1,3 +1,19 @@
+/* Bottom sheet for settings */
+.sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 1100; display: none; }
+.sheet-content { position: absolute; left: 0; right: 0; bottom: 0; background: #0e0f12; color: #fff; border-top-left-radius: 20px; border-top-right-radius: 20px; border: 1px solid rgba(255,255,255,0.08); padding: 12px 16px 20px; max-height: 80vh; overflow: auto; }
+.sheet-grabber { width: 48px; height: 5px; border-radius: 3px; background: rgba(255,255,255,0.3); margin: 6px auto 10px; }
+.sheet-title { text-align: center; font-weight: 800; margin-bottom: 12px; }
+.settings-section { margin: 10px 0 16px; }
+.settings-label { font-weight: 700; margin-bottom: 8px; }
+.settings-label { font-size: 16px; }
+.lang-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.lang-option { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: #fff; font-weight: 800; font-size: 15px; }
+.lang-option img { width: 20px; height: 20px; border-radius: 4px; object-fit: cover; }
+.lang-option:active { transform: scale(0.98); }
+.support-btn { width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(0,123,255,0.9); color: #fff; font-weight: 800; }
+.support-btn img { width: 20px; height: 20px; object-fit: contain; filter: brightness(0) invert(1); }
+.lb-cup { display: flex; justify-content: center; align-items: center; margin: 8px 0 12px 0; }
+.lb-cup .lottie { width: 120px; aspect-ratio: 1/1; }
 /* Font Face Declaration */
 @font-face {
     font-family: 'Onest';
@@ -1299,6 +1315,8 @@ input, textarea {
 .lb-item span:nth-child(4) {
     text-align: right;
 }
+.lb-item span:nth-child(2), /* токены */
+.lb-item span:nth-child(3)  /* профит */ { color: #4caf50; font-weight: 700; }
 .lb-you { background: rgba(0, 123, 255, 0.15); border-color: rgba(0, 123, 255, 0.35); font-weight: 700; }
 .sticky-you { position: sticky; bottom: 0; }
 
@@ -1336,6 +1354,8 @@ input, textarea {
     margin: 12px 0;
     margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
 }
+.ref-cup { display:flex; justify-content:center; align-items:center; margin: 6px 0 10px 0; }
+.ref-cup .lottie { width: 110px; aspect-ratio: 1/1; }
 .referrals-head h2 { font-size: 18px; font-weight: 700; margin-bottom: 10px; text-align: center; }
 .ref-generate-btn {
     display: inline-flex; align-items: center; justify-content: center;
@@ -1344,9 +1364,21 @@ input, textarea {
 }
 .ref-link { margin-top: 8px; text-align: center; font-size: 12px; opacity: 0.9; }
 .referrals-content { margin-top: 14px; }
+.ref-total { display:flex; justify-content: space-between; align-items:center; padding: 8px 10px; border-radius:12px; background: transparent; border: none; margin-bottom: 8px; }
+.ref-total-head { font-weight: 800; opacity: 0.9; }
+.ref-total-sum { font-weight: 800; color: #4caf50; }
 .ref-header-row { display: grid; grid-template-columns: 1fr 0.8fr; gap: 10px; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); font-weight: 700; font-size: 12px; }
+.ref-header-row.plain { background: transparent; border: none; }
+.ref-header-row span:nth-child(2) { text-align: right; }
 .ref-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .ref-item { display: grid; grid-template-columns: 1fr 0.8fr; gap: 10px; align-items: center; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; }
+.ref-item span:nth-child(2) { color: #4caf50; font-weight: 700; text-align: right; }
+/* Чёткое выравнивание чисел по сетке */
+.ref-header-row span, .ref-item span { font-variant-numeric: tabular-nums; }
+
+.ref-bottom-card { position: sticky; bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px); z-index: 900; margin: 12px 20px; padding: 10px 12px; border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); display: flex; flex-direction: column; gap: 8px; }
+.ref-bottom-text { text-align: center; font-weight: 700; }
+.ref-share-btn { background: rgba(0,123,255,0.95); color: #fff; border: none; border-radius: 12px; padding: 10px 14px; font-weight: 700; }
 
 /* Bottom personal card over nav bar */
 .lb-bottom-card {
@@ -1361,20 +1393,18 @@ input, textarea {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     display: grid;
-    grid-template-columns: 40px 1fr 0.7fr 0.7fr 0.5fr;
+    grid-template-columns: 1fr 0.7fr 0.7fr 0.5fr;
     grid-auto-rows: auto;
     gap: 10px;                      /* как у lb-item */
     align-items: center;
 }
-.lb-bottom-avatar { grid-column: 1; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; border: 1px solid rgba(255,255,255,0.25); }
 /* Бейджи без отдельного стекла (плашка уже со стеклом) */
 .lb-bottom-card .lb-badge { background: transparent; border: none; padding: 0; font-size: 13px; font-weight: 700; }
 /* Расположение значений под нужными колонками */
-#lb-bottom-tokens { grid-column: 3; justify-self: start; }
-#lb-bottom-profit { grid-column: 4; justify-self: end; }
-#lb-bottom-place  { grid-column: 5; justify-self: end; }
-/* выравниваем также токены справа для попадания под заголовок */
-#lb-bottom-tokens { justify-self: end; }
+#lb-bottom-nick   { grid-column: 1; justify-self: start; }
+#lb-bottom-tokens { grid-column: 2; justify-self: end; color: #4caf50; }
+#lb-bottom-profit { grid-column: 3; justify-self: end; color: #4caf50; }
+#lb-bottom-place  { grid-column: 4; justify-self: end; }
 
 /* Кнопка «Поделиться» — отдельной строкой, во всю ширину */
 #lb-bottom-share {
