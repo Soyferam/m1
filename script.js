@@ -944,6 +944,14 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     window.addEventListener('scroll', onScrollLP, { passive: true });
 
+    // Оптимизация: при уходе со страницы «Реварды»/кошелек — анимации WebP могут лагать, поэтому ставим паузу змейке
+    const onVisibilityChange = () => {
+        const rewardsVisible = document.getElementById('view-rewards')?.classList.contains('visible');
+        const withdrawVisible = document.getElementById('view-withdraw')?.classList.contains('visible');
+        if (window.snakeAnimation) window.snakeAnimation.paused = !!(rewardsVisible || withdrawVisible);
+    };
+    document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.addEventListener('click', () => setTimeout(onVisibilityChange, 0)));
+
     // Глобальная защита: отключаем pinch-zoom/масштабирование и системные жесты браузера
     const preventMultiTouch = (e) => {
         if (e.touches && e.touches.length > 1) {
@@ -1011,6 +1019,7 @@ class SnakeAnimation {
         this.dpr = Math.min(window.devicePixelRatio || 1, 2);
         this.cssWidth = 0;
         this.cssHeight = 0;
+        this.paused = false;
         this.lowPower = false;
         this.lastDrawMs = 0;
         // Профиль производительности для мобильных
@@ -1139,6 +1148,10 @@ class SnakeAnimation {
     }
     
     animate() {
+        if (this.paused) {
+            requestAnimationFrame(() => this.animate());
+            return;
+        }
         const now = performance.now();
         if (this.lowPower && (now - this.lastDrawMs) < 33) { // ~30fps в lowPower
             requestAnimationFrame(() => this.animate());
