@@ -881,6 +881,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // setupScrollListener();
     // initTapSnapToShop();
     preventEdgeCloseGestures();
+    // Во время активного скролла снижаем нагрузку на анимацию змейки
+    let lpTimer = null;
+    const setLP = (enabled) => { if (window.snakeAnimation) window.snakeAnimation.lowPower = !!enabled; };
+    const onScrollLP = () => {
+        setLP(true);
+        if (lpTimer) clearTimeout(lpTimer);
+        lpTimer = setTimeout(() => setLP(false), 150);
+    };
+    window.addEventListener('scroll', onScrollLP, { passive: true });
 
     // Глобальная защита: отключаем pinch-zoom/масштабирование и системные жесты браузера
     const preventMultiTouch = (e) => {
@@ -949,6 +958,8 @@ class SnakeAnimation {
         this.dpr = Math.min(window.devicePixelRatio || 1, 2);
         this.cssWidth = 0;
         this.cssHeight = 0;
+        this.lowPower = false;
+        this.lastDrawMs = 0;
         // Профиль производительности для мобильных
         this.isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (window.innerWidth <= 480);
 
@@ -1075,8 +1086,15 @@ class SnakeAnimation {
     }
     
     animate() {
+        const now = performance.now();
+        if (this.lowPower && (now - this.lastDrawMs) < 33) { // ~30fps в lowPower
+            requestAnimationFrame(() => this.animate());
+            return;
+        }
+        this.lastDrawMs = now;
+
         this.time += this.speed;
-        
+
         // Очищаем canvas (сброс трансформации для корректного clearRect на HiDPI)
         this.ctx.save();
         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -1124,7 +1142,7 @@ class SnakeAnimation {
             // Стили для тела с умеренным свечением  
             const glowColor = currentSnake.glowColor || currentSnake.bodyColor;
             this.ctx.shadowColor = glowColor;
-            this.ctx.shadowBlur = this.glowBlurBody; // меньшее свечение на мобилках
+            this.ctx.shadowBlur = this.lowPower ? Math.max(2, this.glowBlurBody - 10) : this.glowBlurBody;
             this.ctx.strokeStyle = currentSnake.bodyColor;
         this.ctx.lineWidth = this.bodyWidth;
         this.ctx.lineCap = 'round';
@@ -1152,7 +1170,7 @@ class SnakeAnimation {
             const glowColor = currentSnake.glowColor || currentSnake.bodyColor;
             //console.log('Current snake:', this.currentSnakeType, 'Glow color:', glowColor);
             this.ctx.shadowColor = glowColor;
-            this.ctx.shadowBlur = this.glowBlurHead;
+            this.ctx.shadowBlur = this.lowPower ? Math.max(3, this.glowBlurHead - 12) : this.glowBlurHead;
             
             // Рисуем голову
             this.ctx.drawImage(currentSnakeImage, headX, headY, headSize, headSize);
