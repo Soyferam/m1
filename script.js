@@ -929,6 +929,9 @@ class SnakeAnimation {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
+        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+        this.cssWidth = 0;
+        this.cssHeight = 0;
         // Профиль производительности для мобильных
         this.isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (window.innerWidth <= 480);
 
@@ -1023,16 +1026,22 @@ class SnakeAnimation {
     
     updateCanvasSize() {
         const rect = this.canvas.getBoundingClientRect();
-        // Возвращаем нормальный размер canvas
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
+        this.cssWidth = Math.max(1, Math.floor(rect.width));
+        this.cssHeight = Math.max(1, Math.floor(rect.height));
+        // HiDPI: увеличиваем внутренний буфер, но оставляем CSS‑размер
+        this.canvas.width = Math.max(1, Math.floor(this.cssWidth * this.dpr));
+        this.canvas.height = Math.max(1, Math.floor(this.cssHeight * this.dpr));
+        this.canvas.style.width = this.cssWidth + 'px';
+        this.canvas.style.height = this.cssHeight + 'px';
+        // Масштабируем контекст так, чтобы координаты были в CSS‑пикселях
+        this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     }
     
     init() {
         // Инициализируем позиции точек S-образно
-        const centerY = this.canvas.height / 2;
-        const startX = this.canvas.width * 0.7; // Голова справа
-        const endX = this.canvas.width * 0.3; // Хвост слева
+        const centerY = this.cssHeight / 2;
+        const startX = this.cssWidth * 0.7; // Голова справа
+        const endX = this.cssWidth * 0.3; // Хвост слева
         
         for (let i = 0; i < this.segments; i++) {
             const progress = i / (this.segments - 1);
@@ -1051,8 +1060,11 @@ class SnakeAnimation {
     animate() {
         this.time += this.speed;
         
-        // Очищаем canvas
+        // Очищаем canvas (сброс трансформации для корректного clearRect на HiDPI)
+        this.ctx.save();
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.restore();
         
         // Рисуем змею
         this.drawSnake();
@@ -1134,8 +1146,8 @@ class SnakeAnimation {
     }
     
     updatePositions() {
-        const centerY = this.canvas.height / 2;
-        const headX = this.canvas.width - 110; // Голова левее как было раньше
+        const centerY = this.cssHeight / 2;
+        const headX = this.cssWidth - 110; // Голова левее как было раньше
         
         // Двигаем голову (первый элемент - справа) - уменьшенная амплитуда
         const headMovement = Math.sin(this.time * 1.2) * 5;
@@ -1167,8 +1179,8 @@ class SnakeAnimation {
             currentSegment.y += (targetY - currentSegment.y) * followSpeed;
             
             // Ограничиваем движения границами canvas - с учетом свечения
-            currentSegment.x = Math.max(25, Math.min(this.canvas.width - 25, currentSegment.x));
-            currentSegment.y = Math.max(25, Math.min(this.canvas.height - 25, currentSegment.y));
+            currentSegment.x = Math.max(25, Math.min(this.cssWidth - 25, currentSegment.x));
+            currentSegment.y = Math.max(25, Math.min(this.cssHeight - 25, currentSegment.y));
         }
     }
 }
