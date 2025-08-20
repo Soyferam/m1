@@ -972,22 +972,14 @@ class SnakeAnimation {
             this.ctx.shadowColor = glowColor;
             this.ctx.shadowBlur = 8; // Уменьшенное свечение чтобы не выходило за границы
             this.ctx.strokeStyle = currentSnake.bodyColor;
-        this.ctx.lineWidth = this.bodyWidth;
-        this.ctx.lineCap = 'round';
-        this.ctx.lineJoin = 'round';
-        this.ctx.stroke();
-        
-        // Добавляем градиент для тела
-            const gradient = this.ctx.createLinearGradient(
-                this.positions[0].x, this.positions[0].y,
-                lastPos.x, lastPos.y
-            );
-            gradient.addColorStop(0, currentSnake.bodyColor);
-            gradient.addColorStop(1, currentSnake.bodyGradient);
-        
-        this.ctx.strokeStyle = gradient;
-        this.ctx.stroke();
-        
+            this.ctx.lineWidth = this.bodyWidth;
+            this.ctx.lineCap = 'round';
+            this.ctx.lineJoin = 'round';
+            this.ctx.stroke();
+            
+            // Ранее здесь накладывался градиент (создавал "хвостик" другого цвета). Убрано для единообразия цвета.
+            // this.ctx.strokeStyle = gradient; this.ctx.stroke();
+            
             // Убираем свечение после рисования тела
             this.ctx.shadowBlur = 0;
         }

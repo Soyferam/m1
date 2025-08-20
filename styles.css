@@ -82,15 +82,14 @@ body::-webkit-scrollbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px;
-    margin-top: calc(env(safe-area-inset-top) + 28px); /* было +8px, опустили ещё ниже */
+    padding: 14px;                                 /* было 20px */
+    margin-top: calc(env(safe-area-inset-top) + 16px); /* чуть ниже */
     z-index: 1000;
-    gap: 12px; /* немного компактнее */
 }
 
 .help-btn {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -109,8 +108,8 @@ body::-webkit-scrollbar {
 }
 
 .help-btn img {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     filter: brightness(0) invert(1);
     object-fit: contain;
     flex-shrink: 0;
@@ -119,10 +118,10 @@ body::-webkit-scrollbar {
 .currency-display {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;                                      /* было 8px */
     background: rgba(0, 123, 255, 0.2);
-    padding: 8px 16px;
-    border-radius: 25px;
+    padding: 6px 12px;                             /* было 8px 16px */
+    border-radius: 22px;                           /* чуть меньше */
     border: 1px solid rgba(0, 123, 255, 0.3);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -131,24 +130,24 @@ body::-webkit-scrollbar {
 
 .currency-amount {
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .currency-icon {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     object-fit: contain;
     flex-shrink: 0;
 }
 
 .add-currency-btn {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     background: rgba(0, 123, 255, 0.8);
     border: none;
     color: white;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
