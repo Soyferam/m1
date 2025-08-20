@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#16213e">
+    <title>ZMEIFI - Змейка</title>
+    <link rel="preload" href="./fonts/Onest-VariableFont_wght.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <button class="help-btn">
+                <img src="assets/help-icon.png" alt="Помощь">
+            </button>
+            <div class="currency-display">
+                <span class="currency-amount">74.52 TON</span>
+                <img src="assets/ton-icon.png" alt="TON" class="currency-icon">
+                <button class="add-currency-btn">+</button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Views container -->
+            <div id="views-root">
+                <section id="view-home" class="view visible">
+                    <!-- Текущий контент домашней страницы остаётся здесь -->
+            <div class="game-header">
+                <div class="game-logo">
+                    <img src="assets/game-logo.png" alt="ZMEIFI Logo" class="game-logo-image">
+                </div>
+                <div class="connection-status">
+                    <div class="status-dot"></div>
+                    <span>Соединение стабильно</span>
+                </div>
+            </div>
+            <!-- Character Display -->
+            <div class="character-section">
+                <button class="nav-btn nav-left">
+                    <img src="assets/left-arrow.png" alt="Назад">
+                </button>
+                
+                <div class="character-container">
+                    <div class="character">
+                                <canvas id="snakeCanvas" class="snake-canvas" width="400" height="200"></canvas>
+                        <button class="edit-btn">
+                            <img src="assets/edit-icon.png" alt="Редактировать">
+                        </button>
+                    </div>
+                </div>
+
+                <button class="nav-btn nav-right">
+                    <img src="assets/right-arrow.png" alt="Вперед">
+                </button>
+            </div>
+
+            <!-- Character Multipliers -->
+            <div class="multiplier-buttons">
+                <button class="multiplier-btn active" data-multiplier="1">X1</button>
+                <button class="multiplier-btn" data-multiplier="2">X2</button>
+                <button class="multiplier-btn" data-multiplier="3">X3</button>
+                <button class="multiplier-btn" data-multiplier="4">X4</button>
+                <button class="multiplier-btn" data-multiplier="5">X5</button>
+                        <button class="multiplier-btn custom-multiplier-btn">...</button>
+            </div>
+
+            <!-- Play Buttons -->
+            <div class="play-buttons">
+                <button class="play-btn play-star">
+                            <span id="play-star-text">Играть 220</span>
+                    <img src="assets/star-icon.png" alt="Звезда" class="play-icon">
+                </button>
+                <button class="play-btn play-ton">
+                            <span id="play-ton-text">Играть 1</span>
+                    <img src="assets/ton-icon.png" alt="TON" class="play-icon">
+                </button>
+            </div>
+
+            <!-- Shop Section -->
+            <div class="shop-section">
+                <div class="shop-head">
+                    <div class="shop-head-top">
+                        <h2>Магазин</h2>
+                        <div class="shop-currency">
+                            <span>42 000</span>
+                            <img src="assets/coin-icon.png" alt="Монеты" class="coin-icon">
+                        </div>
+                    </div>
+                    <div class="shop-filters">
+                        <button class="filter-btn active" data-filter="all">Все</button>
+                        <button class="filter-btn" data-filter="hats">Шапки</button>
+                        <button class="filter-btn" data-filter="clothes">Одежда</button>
+                    </div>
+                </div>
+
+                <div class="shop-content">
+                    <div class="shop-items">
+                        <div class="shop-item">
+                            <img src="assets/blue-hat.png" alt="Синяя шапка" class="item-image">
+                            <span class="item-name">Крутая шапка</span>
+                                    <div class="item-price"><span class="price">150</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                        </div>
+                        <div class="shop-item">
+                            <img src="assets/dark-cap.png" alt="Темная кепка" class="item-image">
+                            <span class="item-name">Свой на районе</span>
+                                    <div class="item-price"><span class="price">200</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                                </div>
+                                <div class="shop-item">
+                                    <img src="assets/blue-hat.png" alt="Синяя шапка" class="item-image">
+                                    <span class="item-name">Синяя кепка Премиум</span>
+                                    <div class="item-price"><span class="price">250</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                                </div>
+                                <div class="shop-item">
+                                    <img src="assets/dark-cap.png" alt="Темная кепка" class="item-image">
+                                    <span class="item-name">Темная кепка Делюкс</span>
+                                    <div class="item-price"><span class="price">300</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                                </div>
+                                <div class="shop-item">
+                                    <img src="assets/blue-hat.png" alt="Синяя шапка" class="item-image">
+                                    <span class="item-name">Синяя кепка Лимитед</span>
+                                    <div class="item-price"><span class="price">350</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                                </div>
+                                <div class="shop-item">
+                                    <img src="assets/dark-cap.png" alt="Темная кепка" class="item-image">
+                                    <span class="item-name">Темная кепка Элит</span>
+                                    <div class="item-price"><span class="price">400</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                                </div>
+                                <div class="shop-item">
+                                    <img src="assets/blue-hat.png" alt="Синяя шапка" class="item-image">
+                                    <span class="item-name">Синяя кепка Голд</span>
+                                    <div class="item-price"><span class="price">500</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                                </div>
+                                <div class="shop-item">
+                                    <img src="assets/dark-cap.png" alt="Темная кепка" class="item-image">
+                                    <span class="item-name">Темная кепка Платина</span>
+                                    <div class="item-price"><span class="price">600</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                        </div>
+                        <div class="shop-item">
+                            <img src="assets/blue-hat.png" alt="Синяя шапка" class="item-image">
+                                    <span class="item-name">Синяя кепка Алмаз</span>
+                                    <div class="item-price"><span class="price">750</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                                </div>
+                                <div class="shop-item">
+                                    <img src="assets/dark-cap.png" alt="Темная кепка" class="item-image">
+                                    <span class="item-name">Темная кепка Легенда</span>
+                                    <div class="item-price"><span class="price">1000</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                                </div>
+                                <!-- Добавленные товары -->
+                                <div class="shop-item">
+                                    <img src="assets/blue-hat.png" alt="Синяя шапка" class="item-image">
+                                    <span class="item-name">Синяя кепка Ультра</span>
+                                    <div class="item-price"><span class="price">1200</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                        </div>
+                        <div class="shop-item">
+                            <img src="assets/dark-cap.png" alt="Темная кепка" class="item-image">
+                                    <span class="item-name">Темная кепка Про</span>
+                                    <div class="item-price"><span class="price">1400</span><img src="assets/coin-icon.png" alt="Монеты" class="price-icon"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="view-leaderboard" class="view" aria-hidden="true">
+                    <div class="leaderboard-section">
+                        <div class="leaderboard-head">
+                            <div class="leaderboard-head-top">
+                                <h2>Лидерборд</h2>
+                                <div class="leaderboard-currency">
+                                    <span>Баланс: 12 340</span>
+                                    <img src="assets/coin-icon.png" alt="Монеты" class="coin-icon">
+                                </div>
+                            </div>
+                            <div class="lb-header-row">
+                                <span>Ник</span>
+                                <span>Токены</span>
+                                <span>Профит, $</span>
+                                <span>Место</span>
+                            </div>
+                        </div>
+                        <div class="leaderboard-content">
+                            <div id="lb-list" class="lb-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Объединённая нижняя плашка личного профита -->
+                    <div class="lb-bottom-card" role="region" aria-label="Ваш профиль">
+                        <img src="assets/snake-blue.png" alt="Аватар" class="lb-bottom-avatar" />
+                        <span id="lb-bottom-tokens" class="lb-badge">2742</span>
+                        <span id="lb-bottom-profit" class="lb-badge">$318.20</span>
+                        <span id="lb-bottom-place" class="lb-badge">#742</span>
+                        <button id="lb-bottom-share" class="lb-share-btn">Поделиться</button>
+                    </div>
+                </section>
+                <section id="view-referrals" class="view" aria-hidden="true">
+                    <div class="referrals-section">
+                        <div class="referrals-head">
+                            <h2>Приводи друзей и получай % с их профита!</h2>
+                            <button id="generate-ref" class="ref-generate-btn">Сгенерировать персональную ссылку</button>
+                            <div id="ref-link" class="ref-link" style="display:none;"></div>
+                        </div>
+                        <div class="referrals-content">
+                            <div class="ref-header-row">
+                                <span>Ник</span>
+                                <span>Профит с друга</span>
+                            </div>
+                            <div id="ref-list" class="ref-list"></div>
+                        </div>
+                    </div>
+                </section>
+                <section id="view-rewards" class="view" aria-hidden="true">
+                    <div class="coin-wrapper">
+                        <div id="coin-stage" class="coin-stage" data-model="assets/result-webp.glb" aria-label="3D монета"></div>
+                    </div>
+
+                    <!-- Rewards Section -->
+                    <div class="rewards-section">
+                        <div class="rewards-head">
+                            <div class="rewards-head-top">
+                                <h2>Задания</h2>
+                                <div class="rewards-currency">
+                                    <span>12 340</span>
+                                    <img src="assets/coin-icon.png" alt="Монеты" class="coin-icon">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rewards-content">
+                            <div class="rewards-list">
+                                <div class="reward-item">
+                                    <div class="reward-info">
+                                        <h4 class="reward-title">Подписаться на канал ZmeiFI</h4>
+                                        <p class="reward-desc">Официальный канал новостей и обновлений</p>
+                                    </div>
+                                    <button class="reward-claim">
+                                        <span class="price">+150</span>
+                                        <img src="assets/coin-icon.png" alt="Монеты" class="price-icon">
+                                    </button>
+                                </div>
+
+                                <div class="reward-item">
+                                    <div class="reward-info">
+                                        <h4 class="reward-title">Вступить в комьюнити</h4>
+                                        <p class="reward-desc">Общайся, делись идеями и узнавай первым</p>
+                                    </div>
+                                    <button class="reward-claim">
+                                        <span class="price">+220</span>
+                                        <img src="assets/coin-icon.png" alt="Монеты" class="price-icon">
+                                    </button>
+                                </div>
+
+                                <div class="reward-item">
+                                    <div class="reward-info">
+                                        <h4 class="reward-title">Пригласить друга</h4>
+                                        <p class="reward-desc">Бонус за каждого активного друга</p>
+                                    </div>
+                                    <button class="reward-claim">
+                                        <span class="price">+500</span>
+                                        <img src="assets/coin-icon.png" alt="Монеты" class="price-icon">
+                                    </button>
+                                </div>
+
+                                <div class="reward-item">
+                                    <div class="reward-info">
+                                        <h4 class="reward-title">Ежедневный визит</h4>
+                                        <p class="reward-desc">Забирай награду каждый день</p>
+                                    </div>
+                                    <button class="reward-claim">
+                                        <span class="price">+50</span>
+                                        <img src="assets/coin-icon.png" alt="Монеты" class="price-icon">
+                                    </button>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+                </section>
+                <section id="view-withdraw" class="view" aria-hidden="true"></section>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item">
+                <span class="icon icon-stats" aria-hidden="true"></span>
+            </button>
+            <button class="nav-item">
+                <span class="icon icon-friends" aria-hidden="true"></span>
+            </button>
+            <button class="nav-item active">
+                <span class="icon icon-home" aria-hidden="true"></span>
+            </button>
+            <button class="nav-item">
+                <span class="icon icon-rewards" aria-hidden="true"></span>
+            </button>
+            <button class="nav-item">
+                <span class="icon icon-withdraw" aria-hidden="true"></span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Custom Multiplier Modal -->
+    <div id="custom-multiplier-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Введите множитель</h3>
+                <button class="modal-close" id="close-modal">&times;</button>
+            </div>
+            
+            <div class="input-section">
+                <input type="text" id="custom-value" class="custom-input" placeholder="Введите сумму" readonly>
+            </div>
+            
+            <div class="custom-keyboard">
+                <div class="keyboard-row">
+                    <button class="key-btn" data-key="1">1</button>
+                    <button class="key-btn" data-key="2">2</button>
+                    <button class="key-btn" data-key="3">3</button>
+                </div>
+                <div class="keyboard-row">
+                    <button class="key-btn" data-key="4">4</button>
+                    <button class="key-btn" data-key="5">5</button>
+                    <button class="key-btn" data-key="6">6</button>
+                </div>
+                <div class="keyboard-row">
+                    <button class="key-btn" data-key="7">7</button>
+                    <button class="key-btn" data-key="8">8</button>
+                    <button class="key-btn" data-key="9">9</button>
+                </div>
+                <div class="keyboard-row">
+                    <button class="key-btn" data-key=".">.</button>
+                    <button class="key-btn" data-key="0">0</button>
+                    <button class="key-btn delete-btn" data-key="delete">⌫</button>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-play-btn modal-play-star">
+                    <span id="modal-star-text">Играть 220</span>
+                    <img src="assets/star-icon.png" alt="Звезда" class="play-icon">
+                </button>
+                <button class="modal-play-btn modal-play-ton">
+                    <span id="modal-ton-text">Играть 1</span>
+                    <img src="assets/ton-icon.png" alt="TON" class="play-icon">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

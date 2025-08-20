@@ -1,0 +1,1320 @@
+/* Font Face Declaration */
+@font-face {
+    font-family: 'Onest';
+    src: url('./fonts/Onest-VariableFont_wght.ttf') format('truetype');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* CSS Variables for easy customization */
+:root {
+    --background-start: #0f0f23;
+    --background-middle: #1a1a2e;
+    --background-end: #16213e;
+    --primary-color: #00d4ff;
+    --secondary-color: #0099cc;
+    --accent-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+    --bottom-nav-height: 72px;
+    --font-family: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    /* Единый фон для всех страниц */
+    background: #1A1A1F !important;
+    background-color: #1A1A1F !important;
+    min-height: 100%;
+    overscroll-behavior-y: none;
+    scrollbar-width: none; /* Firefox */
+}
+
+html::-webkit-scrollbar { display: none; }
+
+body {
+    font-family: var(--font-family);
+    color: white;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #1A1A1F !important;
+    background-color: #1A1A1F !important;
+    overscroll-behavior-y: none;
+}
+
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Telegram Web App specific styles */
+.app-container {
+    min-height: 100vh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: visible;
+}
+
+/* Liquid Glass Effect */
+.liquid-glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Top Bar */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    margin-top: calc(env(safe-area-inset-top) + 28px); /* было +8px, опустили ещё ниже */
+    z-index: 1000;
+    gap: 12px; /* немного компактнее */
+}
+
+.help-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.help-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.help-btn img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.currency-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 123, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 25px;
+    border: 1px solid rgba(0, 123, 255, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin-top: 6px; /* опустить чуть ниже */
+}
+
+.currency-amount {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.currency-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.add-currency-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 123, 255, 0.8);
+    border: none;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-currency-btn:hover {
+    background: rgba(0, 123, 255, 1);
+    transform: scale(1.1);
+}
+
+/* Game Header */
+.game-header {
+    text-align: center;
+    padding: 20px 20px 8px 20px; /* меньше нижний паддинг */
+}
+
+.game-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px; /* было 20px */
+}
+
+.game-logo-image {
+    width: auto;
+    height: 60px;
+    max-width: 300px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.connection-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+    font-size: 12px;
+    margin: 6px auto 8px auto; /* небольшие отступы сверху/снизу */
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    flex-shrink: 0;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Character Section */
+.character-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 10px 20px;
+    position: relative;
+}
+
+.nav-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.nav-left {
+    left: 10px;
+}
+
+.nav-right {
+    right: 10px;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.nav-btn img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.character-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.character {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.snake-canvas {
+    width: calc(100vw - 140px);
+    height: 200px;
+    max-width: 400px;
+    min-width: 360px;
+    border-radius: 15px;
+    background: transparent;
+    margin: 0 auto;
+    display: block;
+    /* Создаем маску для обрезки свечения */
+    overflow: hidden;
+    position: relative;
+}
+
+.edit-btn {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.edit-btn img {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1);
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Multiplier Buttons */
+.multiplier-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 20px 15px 20px;
+}
+
+.multiplier-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.multiplier-btn.active,
+.multiplier-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.05);
+}
+
+.multiplier-btn.pulse-animation {
+    animation: buttonPulse 0.3s ease;
+}
+
+@keyframes buttonPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1.05); }
+}
+
+/* Custom Multiplier Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    border-radius: 25px;
+    padding: 30px;
+    width: 90%;
+    max-width: 380px;
+    color: white;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.input-section {
+    margin-bottom: 20px;
+}
+
+.custom-input {
+    width: 100%;
+    padding: 18px;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    font-size: 20px;
+    text-align: center;
+    font-weight: 600;
+    font-family: var(--font-family);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.custom-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.custom-keyboard {
+    margin-bottom: 20px;
+}
+
+.keyboard-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    justify-content: stretch;
+}
+
+.key-btn {
+    flex: 1;
+    height: 55px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: var(--font-family);
+}
+
+.key-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.key-btn:active {
+    transform: translateY(0);
+}
+
+.delete-btn {
+    background: rgba(255, 80, 80, 0.15);
+}
+
+.delete-btn:hover {
+    background: rgba(255, 80, 80, 0.25);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-play-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 15px;
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-family);
+}
+
+.modal-play-star {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.8), rgba(255, 152, 0, 0.8));
+    color: white;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.modal-play-ton {
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.8), rgba(0, 86, 179, 0.8));
+    color: white;
+    border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+.modal-play-btn:hover {
+    transform: scale(1.05);
+}
+
+.modal-play-btn .play-icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* Play Buttons */
+.play-buttons {
+    display: flex;
+    gap: 15px;
+    padding: 10px 20px 15px 20px;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.play-btn {
+    padding: 15px 30px;
+    border-radius: 25px;
+    border: none;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    flex: 1;
+    max-width: 200px;
+    text-align: center;
+}
+
+.play-ton {
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.8), rgba(0, 86, 179, 0.8));
+    color: white;
+    border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+.play-star {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.8), rgba(255, 152, 0, 0.8));
+    color: white;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.play-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.play-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Main Content Area - Fixed */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: visible;
+}
+
+/* Shop Section - Natural part of page */
+.shop-section {
+    margin: 5px 0 0 0;
+    padding: 25px;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Shop container visuals */
+.shop-section {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1.5px solid rgba(255, 255, 255, 0.8); /* было 2px */
+    border-radius: 20px;
+    padding: 0 20px 20px 20px;
+    margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px); /* безопасный зазор под рамкой */
+}
+
+/* Shop header and filters - fixed */
+/* Убираем скроллбар для элементов магазина так как теперь прокручивается вся страница */
+
+.filter-btn {
+    padding: 10px 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1.5px solid rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #fff;
+    font-weight: 600;
+}
+.filter-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.filter-btn.active {
+    background: #ffffff;
+    color: #111418;
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+.shop-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 12px 8px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.shop-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.shop-item.hidden { display: none; }
+
+.item-image {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 10px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.item-name {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.3;
+    text-align: center;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Item price under name */
+/* Баланс - сохраним стиль кнопки */
+.item-price {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    background: rgba(255, 193, 7, 0.2);
+    padding: 6px 10px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(255, 193, 7, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.price-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: calc(env(safe-area-inset-bottom) + 10px);
+    border-radius: 16px; /* Полное закругление */
+    z-index: 1000;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 10px;
+}
+
+.nav-item img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.nav-item.active img,
+.nav-item:hover img {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.nav-item.active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item.disabled {
+    opacity: 1; /* сама кнопка кликабельна, внешний вид меняем только иконкой */
+}
+
+.nav-item.disabled img {
+    filter: grayscale(1) opacity(0.6); /* делаем иконку "неактивной" по цвету */
+}
+
+/* Bottom nav active/inactive states (унифицировано) */
+.bottom-nav .nav-item {
+	background: none;
+	transition: transform 0.12s ease;
+}
+
+/* База: делаем все иконки белыми, но приглушенными */
+.bottom-nav .nav-item img {
+	filter: brightness(0) invert(1) grayscale(1) !important;
+	opacity: 0.55 !important;
+	transition: filter 0.2s ease, opacity 0.2s ease, transform 0.12s ease;
+}
+
+/* Активная: белая иконка, без приглушения */
+.bottom-nav .nav-item.active img {
+	filter: brightness(0) invert(1) grayscale(0) !important;
+	opacity: 1 !important;
+}
+
+/* Bottom nav icons via CSS mask (SVG) */
+.bottom-nav .nav-item .icon {
+	width: 24px;
+	height: 24px;
+	display: block;
+	background-color: rgba(255, 255, 255, 0.55); /* неактивные — серые */
+	transition: background-color 0.2s ease, transform 0.12s ease;
+}
+
+.bottom-nav .nav-item.active .icon {
+	background-color: #ffffff; /* активная — белая */
+}
+
+/* Маски для конкретных иконок */
+.icon-stats {
+	-webkit-mask: url('assets/stats-icon.svg') no-repeat center / contain;
+	mask: url('assets/stats-icon.svg') no-repeat center / contain;
+}
+.icon-friends {
+	-webkit-mask: url('assets/friends-icon.svg') no-repeat center / contain;
+	mask: url('assets/friends-icon.svg') no-repeat center / contain;
+}
+.icon-home {
+	-webkit-mask: url('assets/home-icon.svg') no-repeat center / contain;
+	mask: url('assets/home-icon.svg') no-repeat center / contain;
+}
+.icon-rewards {
+	/* используем имеющийся символ монеты как награды */
+	-webkit-mask: url('assets/snake-coin-icon.svg') no-repeat center / contain;
+	mask: url('assets/snake-coin-icon.svg') no-repeat center / contain;
+}
+.icon-withdraw {
+	-webkit-mask: url('assets/wallet-icon.svg') no-repeat center / contain;
+	mask: url('assets/wallet-icon.svg') no-repeat center / contain;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .app-container {
+        gap: 15px;
+    }
+    
+    .top-bar {
+        padding: 15px;
+    }
+    
+    .nav-left {
+        left: 5px;
+    }
+    
+    .nav-right {
+        right: 5px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-width: none;
+        padding: 25px;
+    }
+    
+    .key-btn {
+        height: 50px;
+        font-size: 18px;
+    }
+    
+    .keyboard-row {
+        gap: 8px;
+    }
+    
+    .custom-input {
+        font-size: 18px;
+        padding: 15px;
+    }
+    
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    
+    .game-logo-image {
+        height: 50px;
+        max-width: 250px;
+    }
+    
+    .snake-character {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .snake-canvas {
+        width: calc(100vw - 100px);
+        height: 170px;
+        max-width: 360px;
+        min-width: 320px;
+    }
+    
+    .play-buttons {
+        flex-direction: row;
+        gap: 10px;
+    }
+    
+    .play-btn {
+        flex: 1;
+        max-width: none;
+        padding: 12px 20px;
+        font-size: 14px;
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+@media (max-width: 360px) {
+    .multiplier-buttons {
+        gap: 5px;
+    }
+    
+    .multiplier-btn {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+    
+    .shop-section {
+        padding: 20px 20px 0 20px;
+    }
+    
+    .play-buttons {
+        gap: 8px;
+    }
+    
+    .play-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+        justify-content: center;
+        text-align: center;
+    }
+}
+
+/* Safe area support for different devices */
+@supports (padding: max(0px)) {
+    .app-container {
+        padding-top: max(20px, env(safe-area-inset-top));
+        padding-bottom: max(20px, env(safe-area-inset-bottom));
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, var(--background-start) 0%, var(--background-middle) 50%, var(--background-end) 100%);
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .liquid-glass {
+        border-width: 2px;
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .nav-item.active {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    .play-btn {
+        border-width: 2px;
+    }
+}
+
+/* Shop v2: unified head + scrollable content */
+.shop-head {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding-top: 16px; /* чтобы баланс не прилипал к обводке */
+}
+
+.shop-head-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.shop-head h2 {
+    font-size: 26px;
+    font-weight: 800;
+}
+
+/* Shop currency with larger icon */
+/* Баланс - сохраним стиль кнопки */
+.shop-currency {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 193, 7, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1.5px solid rgba(255, 193, 7, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.shop-currency span {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.coin-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Filters under title, not centered */
+.shop-filters {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+/* Убираем отдельную прокрутку - весь контент листается через общую страницу */
+.shop-content {
+    /* max-height: min(42vh, 420px); */ /* Убираем ограничение высоты */
+    /* overflow-y: auto; */ /* Убираем отдельную прокрутку */
+    /* overflow-x: hidden; */
+    margin: 0 -25px;
+    padding: 12px 25px 12px 25px; /* Отступ снизу для навигации */
+    background: transparent;
+}
+
+/* Убираем стили скроллбара так как отдельной прокрутки больше нет */
+
+/* Grid of items 2 per row */
+.shop-items {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    /* Убираем отдельную прокрутку магазина */
+    max-height: none;
+    overflow: visible;
+    padding: 0; /* было 0 0 60px 0 — убрали пустоту снизу */
+    margin: 0;
+}
+
+/* Убираем лишний нижний паддинг внутри контента магазина,
+   чтобы рамка шла сразу после последних карточек */
+.shop-content {
+    /* max-height: min(42vh, 420px); */
+    /* overflow-y: auto; */
+    /* overflow-x: hidden; */
+    margin: 0 -25px;
+    padding: 12px 25px 12px 25px; /* было calc(... + 50px) — сделали компактным */
+}
+
+@media (max-width: 480px) {
+    .shop-content {
+        /* max-height: 260px; */ /* Убираем ограничение высоты и на мобильных */
+        margin: 0 -20px;
+        padding: 12px 20px 12px 20px; /* мобильная версия тоже без большой пустоты снизу */
+    }
+    
+    .shop-items {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+}
+
+/* SPA views visibility control */
+.view { display: none; }
+.view.visible { display: block; }
+.view[aria-hidden="true"] { display: none !important; }
+.view[aria-hidden="false"] { display: block !important; }
+
+/* Безопасная зона под фиксированным нижним навбаром */
+.content-safe {
+	padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 24px);
+}
+
+/* Критические CTA: гарантируем зазор над навбаром и корректный скролл */
+.critical-cta {
+	margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 12px);
+	scroll-margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 20px);
+}
+
+/* Кнопка-цена тоже как CTA по скроллингу */
+.item-price {
+	scroll-margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 20px);
+}
+
+/* 3D Coin */
+.coin-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 12px 0 8px 0;
+}
+
+.coin-stage {
+    width: min(48vw, 220px);
+    height: min(48vw, 220px); /* квадрат, меньше прежнего */
+    border-radius: 20px;
+    background: transparent; /* прозрачный фон, рендерер с alpha */
+    position: relative;
+}
+
+.coin-stage img.coin-fallback {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Rewards view positioning for coin under top bar */
+#view-rewards {
+    display: flex;
+    flex-direction: column;         /* колонка */
+    align-items: center;            /* центр по горизонтали */
+    justify-content: flex-start;    /* к началу по вертикали */
+    min-height: calc(100vh - var(--bottom-nav-height) - env(safe-area-inset-bottom));
+    padding-top: calc(env(safe-area-inset-top) + 4px); /* минимальный отступ сверху */
+}
+
+#view-rewards .coin-wrapper {
+    width: 100%;
+    height: auto;
+    margin-top: 4px;                /* чуть ниже баланса/хелпа */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#view-rewards .coin-stage {
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+}
+
+#view-rewards .coin-stage > canvas,
+#view-rewards .coin-stage > img.coin-fallback {
+    max-width: 100%;
+    max-height: 100%;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+}
+
+/* Rewards (tasks) section — похож на магазин */
+.rewards-section {
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    padding: 0 20px 20px 20px;
+    margin: 12px 0;
+    margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px); /* безопасный зазор под рамкой */
+}
+
+.rewards-head {
+    background: transparent;
+    padding-top: 16px;
+}
+.rewards-head-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.rewards-head h2 {
+    font-size: 24px;
+    font-weight: 800;
+}
+.rewards-currency {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 193, 7, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1.5px solid rgba(255, 193, 7, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.rewards-currency span {
+    font-size: 16px;   /* как в магазине */
+    font-weight: 600;  /* как в магазине */
+}
+
+.rewards-content { padding: 0; margin: 0; }
+.rewards-list { display: flex; flex-direction: column; gap: 10px; }
+
+.reward-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 12px;
+}
+.reward-info { display: flex; flex-direction: column; gap: 4px; }
+.reward-title { font-size: 14px; font-weight: 700; }
+.reward-desc { font-size: 12px; opacity: 0.8; }
+
+.reward-claim {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 193, 7, 0.2);
+    padding: 8px 12px;
+    border-radius: 16px;
+    border: 1.5px solid rgba(255, 193, 7, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #fff;
+    font-weight: 700;
+}
+.reward-claim .price-icon { width: 16px; height: 16px; object-fit: contain; }
+
+/* Leaderboard section */
+.leaderboard-section {
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    padding: 0 20px 20px 20px;
+    margin: 12px 0;
+    margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
+}
+.leaderboard-head { background: transparent; padding-top: 16px; }
+.leaderboard-head-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.leaderboard-head h2 { font-size: 24px; font-weight: 800; }
+.leaderboard-currency { display: none !important; }
+.leaderboard-currency span { font-size: 14px; font-weight: 600; }
+.lb-header-row {
+    display: grid; grid-template-columns: 1fr 0.7fr 0.7fr 0.5fr; gap: 10px;
+    padding: 6px 8px;
+    border: none;               /* убрать рамку */
+    background: transparent;    /* убрать фон/blur */
+    font-weight: 700; font-size: 12px;
+}
+.leaderboard-content { margin-top: 10px; position: relative; }
+.lb-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 72px; }
+.lb-item {
+    display: grid; grid-template-columns: 1fr 0.7fr 0.7fr 0.5fr; gap: 10px;
+    align-items: center; padding: 10px; border-radius: 12px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    font-size: 13px;
+}
+.lb-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-you { background: rgba(0, 123, 255, 0.15); border-color: rgba(0, 123, 255, 0.35); font-weight: 700; }
+.sticky-you { position: sticky; bottom: 0; }
+
+/* Leaderboard personal stats */
+.lb-stats {
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    padding: 14px 16px;
+    margin: 12px 0;
+}
+.lb-stats-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.lb-stats h2 { font-size: 20px; font-weight: 800; }
+.lb-share-btn { padding: 8px 12px; border-radius: 14px; border: 1.5px solid rgba(0,123,255,0.35); background: rgba(0,123,255,0.18); color: #fff; font-weight: 700; }
+.lb-stats-row {
+    display: grid; grid-template-columns: auto 1fr 1fr; gap: 10px;
+}
+.lb-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.06);
+}
+.lb-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lb-stat { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; }
+.lb-stat .label { display: block; font-size: 11px; opacity: 0.8; margin-bottom: 4px; }
+.lb-stat .value { font-size: 16px; font-weight: 700; }
+
+/* Referrals section */
+.referrals-section {
+    background: transparent;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    padding: 16px 20px 20px 20px;
+    margin: 12px 0;
+    margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
+}
+.referrals-head h2 { font-size: 18px; font-weight: 700; margin-bottom: 10px; text-align: center; }
+.ref-generate-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 10px 16px; border-radius: 18px; border: 1.5px solid rgba(0,123,255,0.35);
+    background: rgba(0,123,255,0.18); color: #fff; font-weight: 700; margin: 0 auto; display: block;
+}
+.ref-link { margin-top: 8px; text-align: center; font-size: 12px; opacity: 0.9; }
+.referrals-content { margin-top: 14px; }
+.ref-header-row { display: grid; grid-template-columns: 1fr 0.8fr; gap: 10px; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); font-weight: 700; font-size: 12px; }
+.ref-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.ref-item { display: grid; grid-template-columns: 1fr 0.8fr; gap: 10px; align-items: center; padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; }
+
+/* Bottom personal card over nav bar */
+.lb-bottom-card {
+    position: sticky;
+    bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
+    z-index: 900;
+    margin: 12px 20px;              /* как у .leaderboard-section padding по бокам */
+    padding: 10px 12px;
+    border-radius: 16px;
+    border: 1.5px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: grid;
+    grid-template-columns: 40px 1fr 0.7fr 0.7fr 0.5fr;
+    grid-auto-rows: auto;
+    gap: 10px;                      /* как у lb-item */
+    align-items: center;
+}
+.lb-bottom-avatar { grid-column: 1; width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; border: 1px solid rgba(255,255,255,0.25); }
+/* Бейджи без отдельного стекла (плашка уже со стеклом) */
+.lb-bottom-card .lb-badge { background: transparent; border: none; padding: 0; font-size: 13px; font-weight: 700; }
+/* Расположение значений под нужными колонками */
+#lb-bottom-tokens { grid-column: 3; justify-self: start; }
+#lb-bottom-profit { grid-column: 4; justify-self: start; }
+#lb-bottom-place  { grid-column: 5; justify-self: start; }
+
+/* Кнопка «Поделиться» — отдельной строкой, во всю ширину */
+#lb-bottom-share {
+    grid-column: 1 / -1;   /* во всю ширину */
+    width: 100%;
+    text-align: center;
+    background: rgba(0,123,255,0.95);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-weight: 700;
+}
+
+/* Делаем место внизу списка, чтобы 10-й игрок был виден под карточкой */
+.leaderboard-content .lb-list { padding-bottom: calc(var(--bottom-nav-height) + 120px); }
