@@ -354,6 +354,20 @@ function initHelpButton() {
     }
 }
 
+// Settings button functionality
+function initSettingsButton() {
+    const settingsBtn = document.querySelector('.settings-btn');
+    if (!settingsBtn) return;
+    settingsBtn.addEventListener('click', () => {
+        showNotification('Настройки скоро будут');
+        try {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('light');
+            else if (navigator.vibrate) navigator.vibrate(10);
+        } catch(_) {}
+    });
+}
+
 // Add currency button functionality
 function initAddCurrencyButton() {
     const addCurrencyBtn = document.querySelector('.add-currency-btn');
@@ -420,6 +434,8 @@ function initBottomNavigation() {
             showView(viewId);
             // хаптик при переходе между вкладками
             haptic('light');
+            // Всегда начинаем новую вкладку сверху
+            window.scrollTo(0, 0);
         }
     };
 
@@ -854,6 +870,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initNavigationButtons();
     initEditButton();
     initHelpButton();
+    initSettingsButton();
     initAddCurrencyButton();
     initBottomNavigation();
     
@@ -1269,7 +1286,7 @@ async function init3DCoin() {
 
         const scene = new Scene();
         const camera = new PerspectiveCamera(35, 1, 0.1, 100);
-        camera.position.set(0, 0, 3);
+        camera.position.set(0, 0, 2.6);
 
         // lights (чуть ярче + контровой)
         const hemi = new HemisphereLight(0xffffff, 0x222233, 1.2);
@@ -1337,7 +1354,7 @@ async function init3DCoin() {
             box.getSize(size);
             box.getCenter(center);
             model.position.sub(center);
-            const targetSize = 1.15; // было 0.9 — монета чуть больше в том же контейнере
+            const targetSize = 1.35; // масштаб больше, чтобы меньше пустого места сверху/снизу
             const maxDim = Math.max(size.x, size.y, size.z) || 1;
             const scale = targetSize / maxDim;
             model.scale.setScalar(scale);
@@ -1377,6 +1394,7 @@ async function init3DCoin() {
         };
         const onUp = (e) => {
             isDown = false;
+            lastInputAt = performance.now(); // старт отсчёта простоя с момента отпускания
             if (e && e.pointerId != null && stage.releasePointerCapture) {
                 try { stage.releasePointerCapture(e.pointerId); } catch(_) {}
             }
@@ -1404,10 +1422,10 @@ async function init3DCoin() {
                 model.rotation.y += velY;
                 model.rotation.x = Math.max(-clampX, Math.min(clampX, model.rotation.x + velX));
                 const idleMs = performance.now() - lastInputAt;
-                if (idleMs > 900) {
-                    const t = Math.min((idleMs - 900) / 900, 1);
+                if (idleMs > 250) {
+                    const t = Math.min((idleMs - 250) / 500, 1);
                     const ease = 1 - Math.pow(1 - t, 3);
-                    const k = 0.075 * ease; // быстрее возвращаем к центру
+                    const k = 0.11 * ease; // ещё быстрее начинаем возвращать к центру
                     velX *= 0.9; velY *= 0.9;
                     model.rotation.x += (0 - model.rotation.x) * k;
                     model.rotation.y += (0 - model.rotation.y) * k;

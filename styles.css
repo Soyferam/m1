@@ -96,10 +96,12 @@ input, textarea {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px;                                 /* было 20px */
+    padding: 14px calc(env(safe-area-inset-right) + 6px) 14px calc(env(safe-area-inset-left) + 6px); /* ближе к краям с учётом safe area */
     margin-top: calc(env(safe-area-inset-top) + 56px); /* заметно ниже */
     z-index: 1000;
 }
+
+.top-left-actions { display: flex; align-items: center; gap: 8px; }
 
 .help-btn {
     width: 40px;
@@ -116,14 +118,32 @@ input, textarea {
     transition: all 0.3s ease;
 }
 
+.settings-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.settings-btn:hover { background: rgba(255, 255, 255, 0.2); transform: scale(1.05); }
+.settings-btn img { width: 22px; height: 22px; filter: brightness(0) invert(1); object-fit: contain; flex-shrink: 0; }
+
 .help-btn:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.05);
 }
 
 .help-btn img {
-    width: 22px;
-    height: 22px;
+    width: 26px;
+    height: 26px;
     filter: brightness(0) invert(1);
     object-fit: contain;
     flex-shrink: 0;
@@ -382,7 +402,7 @@ input, textarea {
 }
 
 .modal-content {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(18, 20, 25, 0.65); /* темнее для контраста на мобильных */
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
     border: 1.5px solid rgba(255, 255, 255, 0.15);
@@ -434,17 +454,18 @@ input, textarea {
 .custom-input {
     width: 100%;
     padding: 18px;
-    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
     border-radius: 15px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.35); /* темнее для читаемости */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    color: white;
+    color: #ffffff;
     font-size: 20px;
     text-align: center;
-    font-weight: 600;
+    font-weight: 700;
     font-family: var(--font-family);
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .custom-input::placeholder {
@@ -465,27 +486,29 @@ input, textarea {
 .key-btn {
     flex: 1;
     height: 55px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.35); /* темные кнопки для лучшей читаемости цифр */
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    color: white;
+    color: #ffffff;
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     font-family: var(--font-family);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.55);
 }
 
 .key-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.45);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
 }
 
 .key-btn:active {
     transform: translateY(0);
+    background: rgba(0, 0, 0, 0.55);
 }
 
 .delete-btn {
@@ -810,9 +833,16 @@ input, textarea {
 	mask: url('assets/home-icon.svg') no-repeat center / contain;
 }
 .icon-rewards {
-	/* используем имеющийся символ монеты как награды */
-	-webkit-mask: url('assets/snake-coin-icon.svg') no-repeat center / 120%;
-	mask: url('assets/snake-coin-icon.svg') no-repeat center / 120%;
+	/* используем PNG-иконку (белая), без маски */
+	background-color: transparent !important;
+	background-image: url('assets/snake-coin-icon.png');
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+	opacity: 0.55; /* базовое приглушение как у остальных */
+}
+.bottom-nav .nav-item.active .icon.icon-rewards {
+	opacity: 1;
 }
 .icon-withdraw {
 	-webkit-mask: url('assets/wallet-icon.svg') no-repeat center / contain;
@@ -1214,7 +1244,8 @@ input, textarea {
     border-radius: 20px;
     padding: 0 20px 20px 20px;
     margin: 12px 0;
-    margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
+    /* Переносим пространство под липкую карточку НАРУЖУ границы, чтобы контур кончался после последнего игрока */
+    margin-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 120px);
 }
 .leaderboard-head { background: transparent; padding-top: 16px; }
 .leaderboard-head-top {
@@ -1345,4 +1376,4 @@ input, textarea {
 }
 
 /* Делаем место внизу списка, чтобы 10-й игрок был виден под карточкой */
-.leaderboard-content .lb-list { padding-bottom: calc(var(--bottom-nav-height) + 120px); }
+.leaderboard-content .lb-list { padding-bottom: 0; }
