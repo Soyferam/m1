@@ -785,8 +785,8 @@ input, textarea {
 
 /* Bottom nav icons via CSS mask (SVG) */
 .bottom-nav .nav-item .icon {
-	width: 24px;
-	height: 24px;
+	width: 26px;
+	height: 26px;
 	display: block;
 	background-color: rgba(255, 255, 255, 0.55); /* неактивные — серые */
 	transition: background-color 0.2s ease, transform 0.12s ease;
@@ -811,8 +811,8 @@ input, textarea {
 }
 .icon-rewards {
 	/* используем имеющийся символ монеты как награды */
-	-webkit-mask: url('assets/snake-coin-icon.svg') no-repeat center / contain;
-	mask: url('assets/snake-coin-icon.svg') no-repeat center / contain;
+	-webkit-mask: url('assets/snake-coin-icon.svg') no-repeat center / 120%;
+	mask: url('assets/snake-coin-icon.svg') no-repeat center / 120%;
 }
 .icon-withdraw {
 	-webkit-mask: url('assets/wallet-icon.svg') no-repeat center / contain;

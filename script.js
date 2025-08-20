@@ -943,9 +943,9 @@ class SnakeAnimation {
         this.time = 0;
         this.speed = this.isMobile ? 0.018 : 0.02; // слегка медленнее на мобилках для плавности
 
-        // Свечение: ослабляем на мобилках
-        this.glowBlurBody = this.isMobile ? 4 : 8;
-        this.glowBlurHead = this.isMobile ? 9 : 15;
+        // Свечение: яркое и заметное (голова + тело)
+        this.glowBlurBody = 12;
+        this.glowBlurHead = 22;
         
         // Змейки и их характеристики
         this.snakeTypes = {
