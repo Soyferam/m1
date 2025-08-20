@@ -401,19 +401,21 @@ function initSettingsButton() {
 
 // Swap wallet media to smaller versions when available
 function optimizeWalletMedia() {
-    const imgs = document.querySelectorAll('.wallet-gif');
-    imgs.forEach(img => {
-        try {
-            const src = img.getAttribute('src') || '';
-            if (!src.endsWith('.webp')) return;
-            const small = src.replace(/\.webp$/,'-small.webp');
-            // Проверим доступность через prefetch
-            const testImg = new Image();
-            testImg.onload = () => { img.src = small; };
-            testImg.onerror = () => {};
-            testImg.src = small;
-        } catch(_) {}
-    });
+    // Поддержка .tgs (Lottie) при наличии
+    const lotties = document.querySelectorAll('.wallet-lottie[data-tgs]');
+    if (window.lottie && window.pako && lotties.length) {
+        lotties.forEach(el => {
+            const url = el.getAttribute('data-tgs');
+            fetch(url)
+                .then(r => r.arrayBuffer())
+                .then(buf => window.pako.inflate(new Uint8Array(buf), { to: 'string' }))
+                .then(json => {
+                    window.lottie.loadAnimation({ container: el, renderer: 'svg', loop: true, autoplay: true, animationData: JSON.parse(json) });
+                })
+                .catch(() => {});
+        });
+    }
+    // WebP/GIF больше не используем
 }
 
 // Add currency button functionality

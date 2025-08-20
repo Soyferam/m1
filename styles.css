@@ -1424,5 +1424,5 @@ input, textarea {
 .wallet-history-title { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
 .wallet-history-list { min-height: 48px; border-radius: 12px; border: none; background: transparent; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .wallet-media-row { display: grid; grid-template-columns: 0.9fr 0.9fr; gap: 10px; justify-content: center; }
-.wallet-gif { width: 90%; height: auto; margin: 0 auto; border-radius: 12px; border: none; object-fit: cover; image-rendering: -webkit-optimize-contrast; }
+.wallet-lottie { width: 90%; aspect-ratio: 1/1; margin: 0 auto; border-radius: 12px; overflow: hidden; }
 .wallet-empty-hint { text-align: center; margin-top: 4px; font-weight: 700; opacity: 0.95; }

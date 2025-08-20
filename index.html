@@ -16,6 +16,9 @@
         }
     }
     </script>
+    <!-- Lottie + pako (для .tgs) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
 </head>
 <body>
     <div class="app-container">
@@ -315,8 +318,8 @@
                             <h3 class="wallet-history-title">История операций</h3>
                             <div class="wallet-history-list" aria-live="polite">
                                 <div class="wallet-media-row">
-                                    <img class="wallet-gif" src="assets/wallet-1.gif" alt="Пример операции 1" loading="lazy" decoding="async"/>
-                                    <img class="wallet-gif" src="assets/wallet-2.gif" alt="Пример операции 2" loading="lazy" decoding="async"/>
+                                    <div class="wallet-lottie" data-tgs="assets/wallet-1.tgs" aria-label="Пример операции 1"></div>
+                                    <div class="wallet-lottie" data-tgs="assets/wallet-2.tgs" aria-label="Пример операции 2"></div>
                                 </div>
                                 <div class="wallet-empty-hint">Внесите первый депозит!</div>
                             </div>
