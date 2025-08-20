@@ -410,7 +410,10 @@ function initBottomNavigation() {
         } catch (_) {}
     };
 
+    let activeIndex = 2; // текущее состояние
+
     const setActive = (index) => {
+        activeIndex = index;
         navItems.forEach((n, i) => n.classList.toggle('active', i === index));
         const viewId = views[index];
         if (viewId) {
@@ -425,9 +428,16 @@ function initBottomNavigation() {
 
     navItems.forEach((item, index) => {
         item.addEventListener('click', function() {
-            // хаптик при нажатии кнопки
+            // хаптик при нажатии кнопки (всегда)
             haptic('soft');
-            setActive(index);
+
+            // Повторный клик по текущей вкладке: не перезагружаем view, просто скроллим к верху
+            if (index === activeIndex) {
+                window.scrollTo(0, 0);
+            } else {
+                setActive(index);
+            }
+
             this.style.transform = 'scale(0.94)';
             setTimeout(() => { this.style.transform = ''; }, 120);
         });
