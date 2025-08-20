@@ -397,10 +397,27 @@ function initBottomNavigation() {
         }
     };
 
+    // лёгкая тактильная отдача
+    const haptic = (kind = 'selection') => {
+        try {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            if (tg && tg.HapticFeedback) {
+                if (kind === 'selection' && tg.HapticFeedback.selectionChanged) tg.HapticFeedback.selectionChanged();
+                else if (tg.HapticFeedback.impactOccurred) tg.HapticFeedback.impactOccurred(kind);
+            } else if (navigator.vibrate) {
+                navigator.vibrate(10);
+            }
+        } catch (_) {}
+    };
+
     const setActive = (index) => {
         navItems.forEach((n, i) => n.classList.toggle('active', i === index));
         const viewId = views[index];
-        if (viewId) showView(viewId);
+        if (viewId) {
+            showView(viewId);
+            // хаптик при переходе между вкладками
+            haptic('light');
+        }
     };
 
     // начальное состояние — home (индекс 2)
@@ -408,6 +425,8 @@ function initBottomNavigation() {
 
     navItems.forEach((item, index) => {
         item.addEventListener('click', function() {
+            // хаптик при нажатии кнопки
+            haptic('soft');
             setActive(index);
             this.style.transform = 'scale(0.94)';
             setTimeout(() => { this.style.transform = ''; }, 120);
@@ -835,6 +854,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // setupScrollListener();
     // initTapSnapToShop();
     preventEdgeCloseGestures();
+
+    // Глобальная защита: отключаем pinch-zoom/масштабирование и системные жесты браузера
+    const preventMultiTouch = (e) => {
+        if (e.touches && e.touches.length > 1) {
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+    document.addEventListener('touchstart', preventMultiTouch, { passive: false });
+    document.addEventListener('touchmove', preventMultiTouch, { passive: false });
+    document.addEventListener('gesturestart', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    document.addEventListener('gesturechange', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    document.addEventListener('gestureend', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+
+    // Отключаем контекстное меню (долгое нажатие)
+    document.addEventListener('contextmenu', (e) => {
+        const target = e.target;
+        // Разрешаем контекстное меню в полях ввода
+        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+        e.preventDefault();
+    });
     
     // Устанавливаем позицию прокрутки после небольшой задержки
     setTimeout(() => {
