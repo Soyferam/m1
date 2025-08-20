@@ -703,7 +703,7 @@ body::-webkit-scrollbar {
     position: fixed;
     left: 16px;
     right: 16px;
-    bottom: calc(env(safe-area-inset-bottom) + 10px);
+    bottom: calc(env(safe-area-inset-bottom) + 20px);
     border-radius: 16px; /* Полное закругление */
     z-index: 1000;
 }
@@ -1075,6 +1075,8 @@ body::-webkit-scrollbar {
     border-radius: 20px;
     background: transparent; /* прозрачный фон, рендерер с alpha */
     position: relative;
+    touch-action: none; /* исключаем скролл страницы при вращении монетки */
+    -ms-touch-action: none;
 }
 
 .coin-stage img.coin-fallback {

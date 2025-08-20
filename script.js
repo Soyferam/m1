@@ -10,6 +10,9 @@ function initTelegramApp() {
             tg.setHeaderColor('#16213e');
             tg.setBackgroundColor('#16213e');
             tg.enableClosingConfirmation();
+            // Блокируем жест закрытия (свайп снизу) и просим Telegram не закрывать мини‑эпп случайно
+            try { tg.disableVerticalSwipes && tg.disableVerticalSwipes(); } catch(_) {}
+            try { tg.isClosingConfirmationEnabled || tg.enableClosingConfirmation(); } catch(_) {}
         }
     } catch (e) {
         console.warn('Telegram WebApp API unavailable');
@@ -733,6 +736,34 @@ function preventTopBounce() {
     }, { passive: false });
 }
 
+// Блокируем случайный системный жест закрытия (свайп снизу вверх) внутри мини‑эппа
+function preventEdgeCloseGestures() {
+    let startY = 0;
+    let startX = 0;
+    let startNearBottom = false;
+    const bottomThreshold = 28; // зона от нижней кромки, где блокируем жест
+
+    document.addEventListener('touchstart', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        const t = e.touches[0];
+        startY = t.clientY;
+        startX = t.clientX;
+        startNearBottom = (window.innerHeight - startY) <= bottomThreshold;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+        const t = e.touches[0];
+        const dy = t.clientY - startY;
+        const dx = t.clientX - startX;
+        // если жест начался у нижнего края и идёт вверх — не даём системе перехватить
+        if (startNearBottom && Math.abs(dy) > Math.abs(dx) && dy < -6) {
+            if (e.cancelable) e.preventDefault();
+            e.stopPropagation();
+        }
+    }, { passive: false });
+}
+
 async function initTelegramSDKFullscreen() {
     // Пытаемся использовать @telegram-apps/sdk (ESM через CDN). Фолбэк — Telegram.WebApp.
     try {
@@ -803,6 +834,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize scroll control (disabled: remove auto-snap/auto-scroll on home)
     // setupScrollListener();
     // initTapSnapToShop();
+    preventEdgeCloseGestures();
     
     // Устанавливаем позицию прокрутки после небольшой задержки
     setTimeout(() => {
@@ -847,13 +879,20 @@ class SnakeAnimation {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext('2d');
-        this.baseSegments = 15; // Базовое количество сегментов
+        // Профиль производительности для мобильных
+        this.isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || (window.innerWidth <= 480);
+
+        this.baseSegments = this.isMobile ? 12 : 15; // меньше сегментов на мобилках
         this.currentMultiplier = 1; // Текущий множитель
         this.segments = this.baseSegments; // Текущее количество сегментов
-        this.bodyWidth = 45; // Ширина линии тела (еще толще, но меньше головы)
+        this.bodyWidth = this.isMobile ? 32 : 45; // более тонкая линия на мобилках
         this.positions = []; // Позиции точек тела
         this.time = 0;
-        this.speed = 0.02; // Скорость движения
+        this.speed = this.isMobile ? 0.018 : 0.02; // слегка медленнее на мобилках для плавности
+
+        // Свечение: ослабляем на мобилках
+        this.glowBlurBody = this.isMobile ? 4 : 8;
+        this.glowBlurHead = this.isMobile ? 9 : 15;
         
         // Змейки и их характеристики
         this.snakeTypes = {
@@ -1006,7 +1045,7 @@ class SnakeAnimation {
             // Стили для тела с умеренным свечением  
             const glowColor = currentSnake.glowColor || currentSnake.bodyColor;
             this.ctx.shadowColor = glowColor;
-            this.ctx.shadowBlur = 8; // Уменьшенное свечение чтобы не выходило за границы
+            this.ctx.shadowBlur = this.glowBlurBody; // меньшее свечение на мобилках
             this.ctx.strokeStyle = currentSnake.bodyColor;
         this.ctx.lineWidth = this.bodyWidth;
         this.ctx.lineCap = 'round';
@@ -1025,7 +1064,7 @@ class SnakeAnimation {
         const currentSnake = this.snakeTypes[this.currentSnakeType];
         
         if (currentSnakeImage && currentSnakeImage.complete && this.positions.length > 0 && currentSnake) {
-            const headSize = 75; // Размер головы (еще больше)
+            const headSize = this.isMobile ? 64 : 75; // чуть меньше на мобилках
             const headPos = this.positions[0];
             const headX = headPos.x - headSize / 2;
             const headY = headPos.y - headSize / 2;
@@ -1034,7 +1073,7 @@ class SnakeAnimation {
             const glowColor = currentSnake.glowColor || currentSnake.bodyColor;
             //console.log('Current snake:', this.currentSnakeType, 'Glow color:', glowColor);
             this.ctx.shadowColor = glowColor;
-            this.ctx.shadowBlur = 15; // Уменьшенное свечение для головы
+            this.ctx.shadowBlur = this.glowBlurHead;
             
             // Рисуем голову
             this.ctx.drawImage(currentSnakeImage, headX, headY, headSize, headSize);
@@ -1260,11 +1299,17 @@ async function init3DCoin() {
         };
         const onUp = () => { isDown = false; };
 
-        stage.addEventListener('pointerdown', onDown, { passive: true });
-        stage.addEventListener('pointermove', onMove, { passive: true });
+        // Жёстко отделяем жесты на монетке от прокрутки страницы
+        const onDownStop = (e) => { onDown(e); if (e.cancelable) e.preventDefault(); e.stopPropagation(); };
+        const onMoveStop = (e) => { onMove(e); if (e.cancelable) e.preventDefault(); e.stopPropagation(); };
+        const onWheelStop = (e) => { if (e.cancelable) e.preventDefault(); e.stopPropagation(); };
+
+        stage.addEventListener('pointerdown', onDownStop, { passive: false });
+        stage.addEventListener('pointermove', onMoveStop, { passive: false });
         window.addEventListener('pointerup', onUp, { passive: true });
-        stage.addEventListener('touchstart', onDown, { passive: true });
-        stage.addEventListener('touchmove', onMove, { passive: true });
+        stage.addEventListener('touchstart', onDownStop, { passive: false });
+        stage.addEventListener('touchmove', onMoveStop, { passive: false });
+        stage.addEventListener('wheel', onWheelStop, { passive: false });
         window.addEventListener('touchend', onUp, { passive: true });
 
         function animate() {
