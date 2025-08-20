@@ -733,9 +733,46 @@ function preventTopBounce() {
     }, { passive: false });
 }
 
+async function initTelegramSDKFullscreen() {
+    // Пытаемся использовать @telegram-apps/sdk (ESM через CDN). Фолбэк — Telegram.WebApp.
+    try {
+        const sdk = await import('https://cdn.jsdelivr.net/npm/@telegram-apps/sdk/+esm');
+        const { isTMA, init, viewport } = sdk;
+        if (await isTMA()) {
+            init();
+            if (viewport?.mount?.isAvailable?.()) {
+                await viewport.mount();
+                viewport.expand?.();
+            }
+            if (viewport?.requestFullscreen?.isAvailable?.()) {
+                await viewport.requestFullscreen();
+            }
+            return true;
+        }
+    } catch (e) {
+        console.warn('TMA SDK init failed, fallback to Telegram.WebApp', e);
+    }
+    // Фолбэк на Telegram.WebApp API
+    try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg) {
+            tg.expand?.();
+            // Начиная с новых версий клиент сам управляет фуллскрином, но пробуем
+            tg.requestFullscreen?.();
+            return true;
+        }
+    } catch (e) {
+        console.warn('Telegram.WebApp fallback failed', e);
+    }
+    return false;
+}
+
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing app...');
+    
+    // Пытаемся открыть мини‑апп в полноэкранном режиме как можно раньше
+    initTelegramSDKFullscreen();
     
     // Initialize Telegram Web App
     initTelegramApp();
@@ -766,7 +803,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize scroll control
     setupScrollListener();
     initTapSnapToShop();
-    preventTopBounce();
     
     // Устанавливаем позицию прокрутки после небольшой задержки
     setTimeout(() => {
