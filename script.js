@@ -1237,9 +1237,19 @@ async function init3DCoin() {
         let velX = 0, velY = 0;
         let lastInputAt = performance.now();
 
-        const sensY = 0.0045;
-        const sensX = 0.0040;
-        const clampX = 1.2;
+        // Настройка чувствительности под устройство и размер сцены
+        const isCoarsePointer = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || 'ontouchstart' in window;
+        const baseSensY = 0.0045;
+        const baseSensX = 0.0040;
+        const sizeFactor = (() => {
+            const rect = stage.getBoundingClientRect();
+            const w = Math.max(1, Math.floor(rect.width || 220));
+            // чем меньше контейнер, тем чувствительнее
+            return 220 / Math.min(320, w);
+        })();
+        const sensY = baseSensY * (isCoarsePointer ? 2.2 : 1.0) * sizeFactor;
+        const sensX = baseSensX * (isCoarsePointer ? 2.0 : 1.0) * sizeFactor;
+        const clampX = 1.35;
 
         // Лёгкий импульс вращения
         const kickSpin = (strength = 1) => {
@@ -1283,6 +1293,9 @@ async function init3DCoin() {
             isDown = true;
             lastX = (e.touches ? e.touches[0].clientX : e.clientX);
             lastY = (e.touches ? e.touches[0].clientY : e.clientY);
+            if (e.pointerId != null && stage.setPointerCapture) {
+                try { stage.setPointerCapture(e.pointerId); } catch(_) {}
+            }
         };
         const onMove = (e) => {
             if (!isDown || !model) return;
@@ -1291,13 +1304,20 @@ async function init3DCoin() {
             const dx = cx - lastX;
             const dy = cy - lastY;
             lastX = cx; lastY = cy;
+            // Более высокая отзывчивость на мобильных/коурс-поинтерах
+            const gain = isCoarsePointer ? 1.6 : 1.2;
             velY = dx * sensY;
             velX = dy * sensX;
-            model.rotation.y += velY;
-            model.rotation.x = Math.max(-clampX, Math.min(clampX, model.rotation.x + velX));
+            model.rotation.y += velY * gain;
+            model.rotation.x = Math.max(-clampX, Math.min(clampX, model.rotation.x + velX * gain));
             lastInputAt = performance.now();
         };
-        const onUp = () => { isDown = false; };
+        const onUp = (e) => {
+            isDown = false;
+            if (e && e.pointerId != null && stage.releasePointerCapture) {
+                try { stage.releasePointerCapture(e.pointerId); } catch(_) {}
+            }
+        };
 
         // Жёстко отделяем жесты на монетке от прокрутки страницы
         const onDownStop = (e) => { onDown(e); if (e.cancelable) e.preventDefault(); e.stopPropagation(); };
@@ -1314,13 +1334,14 @@ async function init3DCoin() {
 
         function animate() {
             requestAnimationFrame(animate);
-            velX *= 0.95;
-            velY *= 0.96;
+            // слабее демпфирование — дольше крутится
+            velX *= 0.98;
+            velY *= 0.985;
             if (model) {
                 model.rotation.y += velY;
                 model.rotation.x = Math.max(-clampX, Math.min(clampX, model.rotation.x + velX));
                 const idleMs = performance.now() - lastInputAt;
-                if (idleMs > 1000) {
+                if (idleMs > 1800) {
                     const t = Math.min((idleMs - 1000) / 1200, 1);
                     const ease = 1 - Math.pow(1 - t, 3);
                     const k = 0.045 * ease;
