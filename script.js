@@ -467,10 +467,20 @@ function showNotification(message) {
     notification.className = 'notification';
     notification.textContent = message;
     
+    // Compute vertical position at the same level as top bar controls
+    let notifTop = 20;
+    try {
+        const topBar = document.querySelector('.top-bar');
+        if (topBar) {
+            const rect = topBar.getBoundingClientRect();
+            // приблизительно по центру топ-бара
+            notifTop = Math.max(10, Math.round(rect.top + rect.height / 2 - 20));
+        }
+    } catch(_) {}
+
     // Style the notification
     notification.style.cssText = `
         position: fixed;
-        top: 20px;
         left: 50%;
         transform: translateX(-50%);
         background: rgba(0, 123, 255, 0.9);
@@ -483,7 +493,9 @@ function showNotification(message) {
         z-index: 10000;
         font-weight: 500;
         animation: slideDown 0.3s ease;
+        pointer-events: none;
     `;
+    notification.style.top = `${notifTop}px`;
     
     // Add animation keyframes
     if (!document.querySelector('#notification-styles')) {
