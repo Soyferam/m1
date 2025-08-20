@@ -399,6 +399,23 @@ function initSettingsButton() {
     });
 }
 
+// Swap wallet media to smaller versions when available
+function optimizeWalletMedia() {
+    const imgs = document.querySelectorAll('.wallet-gif');
+    imgs.forEach(img => {
+        try {
+            const src = img.getAttribute('src') || '';
+            if (!src.endsWith('.webp')) return;
+            const small = src.replace(/\.webp$/,'-small.webp');
+            // Проверим доступность через prefetch
+            const testImg = new Image();
+            testImg.onload = () => { img.src = small; };
+            testImg.onerror = () => {};
+            testImg.src = small;
+        } catch(_) {}
+    });
+}
+
 // Add currency button functionality
 function initAddCurrencyButton() {
     const addCurrencyBtn = document.querySelector('.add-currency-btn');
@@ -951,6 +968,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.snakeAnimation) window.snakeAnimation.paused = !!(rewardsVisible || withdrawVisible);
     };
     document.querySelectorAll('.bottom-nav .nav-item').forEach(btn => btn.addEventListener('click', () => setTimeout(onVisibilityChange, 0)));
+
+    // Попытка автоматически использовать сжатые вебп, если они есть
+    optimizeWalletMedia();
 
     // Глобальная защита: отключаем pinch-zoom/масштабирование и системные жесты браузера
     const preventMultiTouch = (e) => {
