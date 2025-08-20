@@ -800,9 +800,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize snake animation
     initSnakeAnimation();
     
-    // Initialize scroll control
-    setupScrollListener();
-    initTapSnapToShop();
+    // Initialize scroll control (disabled: remove auto-snap/auto-scroll on home)
+    // setupScrollListener();
+    // initTapSnapToShop();
     
     // Устанавливаем позицию прокрутки после небольшой задержки
     setTimeout(() => {
