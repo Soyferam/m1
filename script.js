@@ -336,8 +336,12 @@ function initEditButton() {
     
     if (editBtn) {
         editBtn.addEventListener('click', () => {
-            console.log('Edit character');
-            showNotification('Редактирование персонажа');
+            openCharacterEditModal();
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('light');
+                else if (navigator.vibrate) navigator.vibrate(10);
+            } catch(_) {}
         });
     }
 }
@@ -348,8 +352,12 @@ function initHelpButton() {
     
     if (helpBtn) {
         helpBtn.addEventListener('click', () => {
-            console.log('Help requested');
-            showNotification('Помощь');
+            openHelpModal();
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('light');
+                else if (navigator.vibrate) navigator.vibrate(10);
+            } catch(_) {}
         });
     }
 }
@@ -975,10 +983,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initNavigationButtons();
     initEditButton();
     initHelpButton();
+    initHelpModal();
     initRewardCheckButtons();
     initSettingsButton();
     initAddCurrencyButton();
     initBottomNavigation();
+    initCharacterEditModal();
     
     // Initialize snake animation
     initSnakeAnimation();
@@ -1123,6 +1133,329 @@ window.ZMEIFI = {
     showNotification,
     filterShopItems
 };
+
+// Character Edit Modal functionality
+function openCharacterEditModal() {
+    const modal = document.getElementById('character-edit-modal');
+    if (!modal) return;
+
+    modal.style.display = 'block';
+    
+    // Lock background scroll
+    try {
+        window.__characterEditScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+        const b = document.body;
+        b.style.position = 'fixed';
+        b.style.top = `-${window.__characterEditScrollY}px`;
+        b.style.left = '0';
+        b.style.right = '0';
+        b.style.width = '100%';
+    } catch(_) {}
+
+    // Show Telegram Back Button
+    try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        tg?.BackButton?.show?.();
+    } catch(_) {}
+
+    // Show modal with animation
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+}
+
+function closeCharacterEditModal() {
+    const modal = document.getElementById('character-edit-modal');
+    if (!modal) return;
+
+    modal.classList.remove('show');
+    
+    // Hide Telegram Back Button
+    try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        tg?.BackButton?.hide?.();
+    } catch(_) {}
+
+    // Restore background scroll
+    try {
+        const b = document.body;
+        b.style.position = '';
+        b.style.top = '';
+        b.style.left = '';
+        b.style.right = '';
+        b.style.width = '';
+        if (window.__characterEditScrollY !== undefined) {
+            window.scrollTo(0, window.__characterEditScrollY);
+            delete window.__characterEditScrollY;
+        }
+    } catch(_) {}
+
+    // Hide modal after animation
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
+// Initialize Character Edit Modal
+function initCharacterEditModal() {
+    const modal = document.getElementById('character-edit-modal');
+    if (!modal) return;
+
+    const content = modal.querySelector('.character-edit-content');
+    const backBtn = modal.querySelector('.sheet-back-btn');
+    const resetBtn = modal.querySelector('.reset-btn');
+    const acceptBtn = modal.querySelector('.accept-btn');
+    const editItems = modal.querySelectorAll('.edit-item');
+    const carouselArrows = modal.querySelectorAll('.carousel-arrow');
+
+    // Close modal handlers
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeCharacterEditModal();
+        }
+    });
+
+    // Back button handler
+    if (backBtn) {
+        backBtn.addEventListener('click', closeCharacterEditModal);
+    }
+
+    // Reset button handler
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            // Remove all selections
+            editItems.forEach(item => item.classList.remove('selected'));
+            showNotification('Настройки сброшены');
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('medium');
+                else if (navigator.vibrate) navigator.vibrate(20);
+            } catch(_) {}
+        });
+    }
+
+    // Accept button handler
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', () => {
+            const selectedItems = modal.querySelectorAll('.edit-item.selected');
+            if (selectedItems.length === 0) {
+                showNotification('Выберите хотя бы один предмет');
+                return;
+            }
+            
+            // Apply selections (here you would typically save to backend)
+            const selections = {};
+            selectedItems.forEach(item => {
+                const type = item.getAttribute('data-type');
+                const id = item.getAttribute('data-id');
+                if (!selections[type]) selections[type] = [];
+                selections[type].push(id);
+            });
+            
+            console.log('Applied selections:', selections);
+            showNotification('Изменения применены');
+            closeCharacterEditModal();
+            
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('success');
+                else if (navigator.vibrate) navigator.vibrate(30);
+            } catch(_) {}
+        });
+    }
+
+    // Edit item selection
+    editItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const type = item.getAttribute('data-type');
+            
+            // Remove selection from other items of the same type
+            modal.querySelectorAll(`.edit-item[data-type="${type}"]`).forEach(otherItem => {
+                otherItem.classList.remove('selected');
+            });
+            
+            // Toggle selection for clicked item
+            item.classList.toggle('selected');
+            
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('light');
+                else if (navigator.vibrate) navigator.vibrate(10);
+            } catch(_) {}
+        });
+    });
+
+    // Carousel functionality
+    carouselArrows.forEach(arrow => {
+        arrow.addEventListener('click', () => {
+            const carousel = arrow.closest('.items-carousel');
+            const track = carousel.querySelector('.carousel-track');
+            const isLeft = arrow.classList.contains('carousel-left');
+            
+            const scrollAmount = 140; // Width of item + gap
+            const currentTransform = getComputedStyle(track).transform;
+            const matrix = new DOMMatrix(currentTransform);
+            const currentX = matrix.m41;
+            
+            let newX;
+            if (isLeft) {
+                // Move left - show previous items
+                newX = Math.min(0, currentX + scrollAmount);
+            } else {
+                // Move right - show next items
+                const maxScroll = -(track.scrollWidth - carousel.offsetWidth);
+                newX = Math.max(maxScroll, currentX - scrollAmount);
+            }
+            
+            track.style.transform = `translateX(${newX}px)`;
+            
+            // Update arrow states
+            updateCarouselArrows(carousel);
+            
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('light');
+                else if (navigator.vibrate) navigator.vibrate(10);
+            } catch(_) {}
+        });
+    });
+
+    // Function to update carousel arrow states
+    function updateCarouselArrows(carousel) {
+        const track = carousel.querySelector('.carousel-track');
+        const leftArrow = carousel.querySelector('.carousel-left');
+        const rightArrow = carousel.querySelector('.carousel-right');
+        
+        const currentTransform = getComputedStyle(track).transform;
+        const matrix = new DOMMatrix(currentTransform);
+        const currentX = matrix.m41;
+        
+        // Enable/disable left arrow
+        if (leftArrow) {
+            leftArrow.disabled = currentX >= 0;
+            leftArrow.style.opacity = currentX >= 0 ? '0.5' : '1';
+        }
+        
+        // Enable/disable right arrow
+        if (rightArrow) {
+            const maxScroll = -(track.scrollWidth - carousel.offsetWidth);
+            rightArrow.disabled = currentX <= maxScroll;
+            rightArrow.style.opacity = currentX <= maxScroll ? '0.5' : '1';
+        }
+    }
+
+    // Touch/swipe support for carousels
+    const carouselElements = modal.querySelectorAll('.items-carousel');
+    carouselElements.forEach(carousel => {
+        const track = carousel.querySelector('.carousel-track');
+        let startX = 0;
+        let currentX = 0;
+        let isDragging = false;
+
+        carousel.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        }, { passive: true });
+
+        carousel.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            currentX = e.touches[0].clientX;
+            const diff = startX - currentX;
+            
+            // Move track with finger
+            const currentTransform = getComputedStyle(track).transform;
+            const matrix = new DOMMatrix(currentTransform);
+            const currentTrackX = matrix.m41;
+            track.style.transform = `translateX(${currentTrackX - diff}px)`;
+        }, { passive: true });
+
+        carousel.addEventListener('touchend', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            const diff = startX - currentX;
+            const threshold = 50; // Minimum swipe distance
+            
+            if (Math.abs(diff) > threshold) {
+                // Snap to next/previous item
+                const scrollAmount = 140;
+                const currentTransform = getComputedStyle(track).transform;
+                const matrix = new DOMMatrix(currentTransform);
+                const currentTrackX = matrix.m41;
+                
+                let targetX;
+                if (diff > 0) {
+                    // Swipe left - go to next item
+                    targetX = Math.max(-(track.scrollWidth - carousel.offsetWidth), currentTrackX - scrollAmount);
+                } else {
+                    // Swipe right - go to previous item
+                    targetX = Math.min(0, currentTrackX + scrollAmount);
+                }
+                
+                track.style.transform = `translateX(${targetX}px)`;
+            } else {
+                // Snap back to current position
+                const currentTransform = getComputedStyle(track).transform;
+                const matrix = new DOMMatrix(currentTransform);
+                const currentTrackX = matrix.m41;
+                const scrollAmount = 140;
+                const targetX = Math.round(currentTrackX / scrollAmount) * scrollAmount;
+                
+                // Ensure we don't go beyond bounds
+                targetX = Math.max(-(track.scrollWidth - carousel.offsetWidth), Math.min(0, targetX));
+                track.style.transform = `translateX(${targetX}px)`;
+            }
+            
+            // Update arrow states after swipe
+            updateCarouselArrows(carousel);
+        }, { passive: true });
+    });
+
+    // Swipe to close (like settings modal)
+    let startY = 0;
+    let currentY = 0;
+
+    modal.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    modal.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        
+        if (diff > 50) { // Swipe down
+            content.style.transform = `translateY(${Math.min(diff, 100)}px)`;
+        }
+    }, { passive: true });
+
+    modal.addEventListener('touchend', () => {
+        const diff = currentY - startY;
+        
+        if (diff > 100) { // Swipe down threshold
+            closeCharacterEditModal();
+        } else {
+            content.style.transform = 'translateY(0)';
+        }
+    }, { passive: true });
+
+    // Telegram Back Button handler
+    try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && tg.BackButton) {
+            tg.BackButton.onClick(closeCharacterEditModal);
+        }
+    } catch(_) {}
+
+    // Block scroll on modal
+    modal.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    modal.addEventListener('wheel', (e) => { e.preventDefault(); }, { passive: false });
+
+    // Initialize carousel arrow states
+    const carouselInitElements = modal.querySelectorAll('.items-carousel');
+    carouselInitElements.forEach(carousel => {
+        updateCarouselArrows(carousel);
+    });
+}
 
 // Snake Animation
 class SnakeAnimation {
@@ -1424,7 +1757,7 @@ async function init3DCoin() {
             img.src = srcs[idx++];
         };
         img.onerror = tryNext;
-        img.alt = 'Монета';
+        img.alt = ''; /* убираем текст "Монета" */
         stage.appendChild(img);
         tryNext();
     };
@@ -1764,4 +2097,227 @@ function initLeaderboardShare() {
 
     btnTop?.addEventListener('click', handler);
     btnBottom?.addEventListener('click', handler);
+}
+
+// Help Modal functionality
+function initHelpModal() {
+    const helpModal = document.getElementById('help-modal');
+    if (!helpModal) return;
+
+    const helpImage = document.getElementById('help-image');
+    const helpLottie = document.getElementById('help-lottie');
+    const helpText = document.getElementById('help-text');
+    const helpBack = document.getElementById('help-back');
+    const helpNext = document.getElementById('help-next');
+
+    // Help content data (Russian translations)
+    const helpSteps = [
+        {
+            image: 'assets/help-1.png',
+            text: 'Добро пожаловать в ZmeiFi, крипто-игру где можно заработать.'
+        },
+        {
+            image: 'assets/help-2.png',
+            text: 'Заставь других змей сталкиваться с тобой и защищай свою голову!'
+        },
+        {
+            image: 'assets/help-3.png',
+            text: 'Ешь остатки других змей и увеличивай свой депозит.'
+        },
+        {
+            image: 'assets/help-4.png',
+            text: 'Собирай токены. На них можно купить скины для своей змеи.'
+        },
+        {
+            image: 'assets/help-5.png',
+            text: 'Выводи заработанные деньги на любой кошелек или Stars.'
+        }
+    ];
+
+    let currentStep = 0;
+
+    function showStep(step) {
+        if (step < 0 || step >= helpSteps.length) return;
+        
+        currentStep = step;
+        const stepData = helpSteps[step];
+        
+        // Показываем изображение и Lottie в зависимости от шага
+        if (step === helpSteps.length - 1) {
+            // Последний шаг - показываем и картинку, и Lottie снизу
+            helpImage.style.display = 'block';
+            helpLottie.style.display = 'block';
+            helpImage.src = stepData.image;
+            
+            // Инициализируем Lottie если еще не инициализирована
+            if (!helpLottie.hasAttribute('data-lottie-loaded')) {
+                try {
+                    if (window.lottie && window.pako) {
+                        const url = helpLottie.getAttribute('data-tgs');
+                        fetch(url)
+                            .then(r => r.arrayBuffer())
+                            .then(buf => window.pako.inflate(new Uint8Array(buf), { to: 'string' }))
+                            .then(json => {
+                                window.lottie.loadAnimation({ 
+                                    container: helpLottie, 
+                                    renderer: 'svg', 
+                                    loop: true, 
+                                    autoplay: true, 
+                                    animationData: JSON.parse(json) 
+                                });
+                                helpLottie.setAttribute('data-lottie-loaded', 'true');
+                            })
+                            .catch(() => {});
+                    }
+                } catch(_) {}
+            }
+        } else {
+            // Обычные шаги - показываем только изображение
+            helpImage.style.display = 'block';
+            helpLottie.style.display = 'none';
+            helpImage.src = stepData.image;
+        }
+        
+        helpText.textContent = stepData.text;
+        
+        // Show/hide navigation buttons
+        helpBack.style.display = step === 0 ? 'none' : 'block';
+        
+        if (step === helpSteps.length - 1) {
+            helpNext.textContent = 'Принять';
+        } else {
+            helpNext.textContent = 'Далее';
+        }
+    }
+
+    function nextStep() {
+        if (currentStep === helpSteps.length - 1) {
+            // Last step - close modal
+            closeHelpModal();
+        } else {
+            showStep(currentStep + 1);
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 0) {
+            showStep(currentStep - 1);
+        }
+    }
+
+    // Event listeners
+    helpNext.addEventListener('click', nextStep);
+    helpBack.addEventListener('click', prevStep);
+
+    // Swipe to close (like settings modal)
+    let startY = 0;
+    let currentY = 0;
+
+    helpModal.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    helpModal.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        
+        if (diff > 50) { // Swipe down
+            const sheet = helpModal.querySelector('.sheet-content');
+            sheet.style.transform = `translateY(${Math.min(diff, 100)}px)`;
+        }
+    }, { passive: true });
+
+    helpModal.addEventListener('touchend', () => {
+        const sheet = helpModal.querySelector('.sheet-content');
+        const diff = currentY - startY;
+        
+        if (diff > 100) { // Swipe down threshold
+            closeHelpModal();
+        } else {
+            sheet.style.transform = 'translateY(0)';
+        }
+    }, { passive: true });
+
+    // Initialize first step
+    showStep(0);
+
+    // Telegram Back Button handler
+    try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && tg.BackButton) {
+            tg.BackButton.onClick(closeHelpModal);
+        }
+    } catch(_) {}
+
+    // Сохраняем экземпляр глобально для доступа из openHelpModal
+    window.helpModalInstance = {
+        showStep: showStep,
+        currentStep: () => currentStep
+    };
+}
+
+function openHelpModal() {
+    const helpModal = document.getElementById('help-modal');
+    if (!helpModal) return;
+
+    // Сброс на первый шаг при каждом открытии
+    if (window.helpModalInstance) {
+        window.helpModalInstance.showStep(0);
+    }
+
+    helpModal.style.display = 'block';
+    
+    // Lock background scroll
+    try {
+        window.__helpScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+        const b = document.body;
+        b.style.position = 'fixed';
+        b.style.top = `-${window.__helpScrollY}px`;
+        b.style.left = '0';
+        b.style.right = '0';
+        b.style.width = '100%';
+    } catch(_) {}
+
+    // Show Telegram Back Button
+    try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        tg?.BackButton?.show?.();
+    } catch(_) {}
+
+    // Show modal with animation
+    setTimeout(() => {
+        helpModal.classList.add('show');
+    }, 10);
+}
+
+function closeHelpModal() {
+    const helpModal = document.getElementById('help-modal');
+    if (!helpModal) return;
+
+    helpModal.classList.remove('show');
+    
+    // Hide Telegram Back Button
+    try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        tg?.BackButton?.hide?.();
+    } catch(_) {}
+
+    // Restore background scroll
+    try {
+        const b = document.body;
+        b.style.position = '';
+        b.style.top = '';
+        b.style.left = '';
+        b.style.right = '';
+        b.style.width = '';
+        if (window.__helpScrollY !== undefined) {
+            window.scrollTo(0, window.__helpScrollY);
+            delete window.__helpScrollY;
+        }
+    } catch(_) {}
+
+    // Hide modal after animation
+    setTimeout(() => {
+        helpModal.style.display = 'none';
+    }, 300);
 }
