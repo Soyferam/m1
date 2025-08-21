@@ -199,15 +199,19 @@ input, textarea {
     border-radius: 50%;
     background: rgba(0, 123, 255, 0.8);
     border: none;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    line-height: 1; /* избежать смещения по базовой линии на мобильных */
+    padding: 0; /* убираем внутренние отступы */
+}
+
+.plus-icon {
+    width: 12px;
+    height: 12px;
+    object-fit: contain;
+    filter: brightness(0) invert(1); /* делаем иконку белой */
 }
 
 .add-currency-btn:hover {
