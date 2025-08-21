@@ -441,34 +441,142 @@ function initRewardCheckButtons() {
 function initSettingsButton() {
     const settingsBtn = document.querySelector('.settings-btn');
     if (!settingsBtn) return;
+    
+    const sheet = document.getElementById('settings-modal');
+    if (!sheet) return;
+    
+    // Функция закрытия модального окна
+    const closeSettingsModal = () => {
+        sheet.style.display = 'none';
+        // Восстанавливаем скролл
+        try {
+            const b = document.body;
+            b.style.position = '';
+            b.style.top = '';
+            b.style.left = '';
+            b.style.right = '';
+            b.style.width = '';
+            if (window.__sheetScrollY !== undefined) {
+                window.scrollTo(0, window.__sheetScrollY);
+                delete window.__sheetScrollY;
+            }
+        } catch(_) {}
+        // Скрываем Telegram Back Button
+        try {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            tg?.BackButton?.hide?.();
+        } catch(_) {}
+    };
+    
+    // Открытие модального окна
     settingsBtn.addEventListener('click', () => {
-        const sheet = document.getElementById('settings-modal');
-        if (sheet) {
-            sheet.style.display = 'block';
-            // Lock background scroll
-            try {
-                window.__sheetScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
-                const b = document.body;
-                b.style.position = 'fixed';
-                b.style.top = `-${window.__sheetScrollY}px`;
-                b.style.left = '0';
-                b.style.right = '0';
-                b.style.width = '100%';
-            } catch(_) {}
-            // Показать Telegram Back Button и дублирующую локальную кнопку
-            try {
-                const tg = window.Telegram && window.Telegram.WebApp;
-                tg?.BackButton?.show?.();
-            } catch(_) {}
-            const backBtn = sheet.querySelector('.sheet-back-btn');
-            if (backBtn) backBtn.style.display = '';
-        }
+        sheet.style.display = 'block';
+        // Lock background scroll
+        try {
+            window.__sheetScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+            const b = document.body;
+            b.style.position = 'fixed';
+            b.style.top = `-${window.__sheetScrollY}px`;
+            b.style.left = '0';
+            b.style.right = '0';
+            b.style.width = '100%';
+        } catch(_) {}
+        // Показать Telegram Back Button
+        try {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            tg?.BackButton?.show?.();
+        } catch(_) {}
+        
+        // Haptic feedback
         try {
             const tg = window.Telegram && window.Telegram.WebApp;
             if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('light');
             else if (navigator.vibrate) navigator.vibrate(10);
         } catch(_) {}
     });
+    
+    // Закрытие по клику вне модального окна
+    sheet.addEventListener('click', (e) => {
+        if (e.target === sheet) {
+            closeSettingsModal();
+        }
+    });
+    
+    // Закрытие по Telegram Back Button
+    try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && tg.BackButton) {
+            tg.BackButton.onClick(closeSettingsModal);
+        }
+    } catch(_) {}
+    
+    // Блокируем скролл на модальном окне
+    sheet.addEventListener('touchmove', (e) => { 
+        if (e.cancelable) e.preventDefault(); 
+    }, { passive: false });
+    sheet.addEventListener('wheel', (e) => { 
+        e.preventDefault(); 
+    }, { passive: false });
+    
+    // Инициализация кнопок выбора языка
+    const langOptions = sheet.querySelectorAll('.lang-option');
+    langOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            const lang = option.getAttribute('data-lang');
+            
+            // Убираем активный класс со всех кнопок
+            langOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // Добавляем активный класс к выбранной кнопке
+            option.classList.add('active');
+            
+            // Haptic feedback
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.HapticFeedback?.selectionChanged) tg.HapticFeedback.selectionChanged();
+                else if (navigator.vibrate) navigator.vibrate(10);
+            } catch(_) {}
+            
+            // Здесь можно добавить логику смены языка
+            console.log('Selected language:', lang);
+            
+            // Показываем уведомление
+            showNotification(`Язык изменен на ${option.querySelector('span').textContent}`);
+        });
+    });
+    
+    // Устанавливаем русский язык как активный по умолчанию
+    const ruOption = sheet.querySelector('.lang-option[data-lang="ru"]');
+    if (ruOption) {
+        ruOption.classList.add('active');
+    }
+    
+    // Инициализация кнопки поддержки
+    const supportBtn = sheet.querySelector('.support-btn');
+    if (supportBtn) {
+        supportBtn.addEventListener('click', () => {
+            // Haptic feedback
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('medium');
+                else if (navigator.vibrate) navigator.vibrate(20);
+            } catch(_) {}
+            
+            // Здесь можно добавить логику открытия чата поддержки
+            console.log('Support button clicked');
+            
+            // Показываем уведомление
+            showNotification('Открываем чат поддержки...');
+            
+            // Можно добавить открытие Telegram чата
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                if (tg && tg.openTelegramLink) {
+                    tg.openTelegramLink('https://t.me/zmeifi_support');
+                }
+            } catch(_) {}
+        });
+    }
 }
 
 // Swap wallet media to smaller versions when available
@@ -1100,8 +1208,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Закрытие по клику вне
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
         // Блокируем скролл на оверлее
-        overlay.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
-        overlay.addEventListener('wheel', (e) => { e.preventDefault(); }, { passive: false });
+        overlay.addEventListener('touchmove', (e) => { 
+            if (e.cancelable) e.preventDefault(); 
+        }, { passive: false });
+        overlay.addEventListener('wheel', (e) => { 
+            e.preventDefault(); 
+        }, { passive: false });
         // Свайп вниз для закрытия
         let startY = 0, dy = 0, dragging = false;
         content.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
