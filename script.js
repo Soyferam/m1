@@ -5,9 +5,9 @@ let tg = null;
 let loadingProgress = 0;
 let loadingSteps = [
     { name: 'Инициализация...', progress: 10 },
-    { name: 'Загрузка ресурсов...', progress: 30 },
-    { name: 'Подготовка 3D модели...', progress: 60 },
-    { name: 'Загрузка 3D монетки...', progress: 90 },
+    { name: 'Грузим змей...', progress: 30 },
+    { name: 'Подготовка к сражениям', progress: 60 },
+    { name: 'Подписываем блокчейн', progress: 90 },
     { name: 'Готово!', progress: 100 }
 ];
 
