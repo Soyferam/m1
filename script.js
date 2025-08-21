@@ -1337,6 +1337,23 @@ function initCharacterEditModal() {
             closeCharacterEditModal();
         }
     });
+    
+    // Дополнительная защита - предотвращаем закрытие при клике на любой контент
+    const modalContent = modal.querySelector('.character-edit-content');
+    if (modalContent) {
+        modalContent.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // Дополнительная защита для всех элементов внутри модала
+        modalContent.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
+        
+        modalContent.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+        });
+    }
 
     // Back button handler
     if (backBtn) {
@@ -1361,8 +1378,24 @@ function initCharacterEditModal() {
 
     // Reset button handler
     if (resetBtn) {
-        resetBtn.addEventListener('click', (e) => {
+        // Дополнительная защита - предотвращаем всплытие события
+        resetBtn.addEventListener('mousedown', (e) => {
             e.stopPropagation();
+        });
+        
+        resetBtn.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+        });
+        
+        resetBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Дополнительная защита от всплытия события
+            setTimeout(() => {
+                e.stopImmediatePropagation();
+            }, 0);
             
             // Remove all selections
             editItems.forEach(item => item.classList.remove('selected'));
@@ -1377,8 +1410,19 @@ function initCharacterEditModal() {
 
     // Accept button handler
     if (acceptBtn) {
-        acceptBtn.addEventListener('click', (e) => {
+        // Дополнительная защита - предотвращаем всплытие события
+        acceptBtn.addEventListener('mousedown', (e) => {
             e.stopPropagation();
+        });
+        
+        acceptBtn.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+        });
+        
+        acceptBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
             
             const selectedItems = modal.querySelectorAll('.edit-item.selected');
             if (selectedItems.length === 0) {
@@ -1397,7 +1441,11 @@ function initCharacterEditModal() {
             
             console.log('Applied selections:', selections);
             showNotification('Изменения применены');
-            closeCharacterEditModal();
+            
+            // Закрываем модал после применения изменений
+            setTimeout(() => {
+                closeCharacterEditModal();
+            }, 100);
             
             try {
                 const tg = window.Telegram && window.Telegram.WebApp;
@@ -1413,6 +1461,11 @@ function initCharacterEditModal() {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
+            
+            // Дополнительная защита от всплытия события
+            setTimeout(() => {
+                e.stopImmediatePropagation();
+            }, 0);
             
             const type = item.getAttribute('data-type');
             
@@ -1884,7 +1937,8 @@ async function init3DCoin() {
             'assets/result-webp.png',
             'assets/result-webp',
             'assets/coin.webp',
-            'assets/coin.png'
+            'assets/coin.png',
+            'assets/ton-icon.png' // Используем иконку TON как fallback
         ].filter(Boolean));
     };
 
@@ -2007,20 +2061,20 @@ async function init3DCoin() {
             // стартовый мягкий проворот при загрузке
             kickSpin(1);
             
-            // Обновляем прогресс и скрываем экран загрузки
-            updateLoadingProgress(4, 'Готово!');
-            setTimeout(() => {
-                hideLoadingScreen();
-            }, 500);
+            // Обновляем прогресс и скрываем экран загрузки - ВРЕМЕННО ОТКЛЮЧЕНО
+            // updateLoadingProgress(4, 'Готово!');
+            // setTimeout(() => {
+            //     hideLoadingScreen();
+            // }, 500);
         }, undefined, (err) => {
             console.error('GLB load error:', err);
             showFallback();
             
-            // Даже при ошибке скрываем экран загрузки
-            updateLoadingProgress(4, 'Готово!');
-            setTimeout(() => {
-                hideLoadingScreen();
-            }, 500);
+            // Даже при ошибке скрываем экран загрузки - ВРЕМЕННО ОТКЛЮЧЕНО
+            // updateLoadingProgress(4, 'Готово!');
+            // setTimeout(() => {
+            //     hideLoadingScreen();
+            // }, 500);
         });
 
         // таймаут на случай тишины от loader'а
@@ -2029,13 +2083,21 @@ async function init3DCoin() {
                 console.warn('GLB load timeout, showing fallback'); 
                 showFallback(); 
                 
-                // При таймауте тоже скрываем экран загрузки
-                updateLoadingProgress(4, 'Готово!');
-                setTimeout(() => {
-                    hideLoadingScreen();
-                }, 500);
+                // При таймауте тоже скрываем экран загрузки - ВРЕМЕННО ОТКЛЮЧЕНО
+                // updateLoadingProgress(4, 'Готово!');
+                // setTimeout(() => {
+                //     hideLoadingProgress();
+                // }, 500);
             } 
         }, 4000);
+        
+        // Принудительно показываем fallback через 5 секунд, если ничего не загрузилось
+        setTimeout(() => {
+            if (!loaded && !stage.children.length) {
+                console.warn('Force showing fallback after 5 seconds');
+                showFallback();
+            }
+        }, 5000);
 
         const onDown = (e) => {
             isDown = true;
@@ -2121,6 +2183,7 @@ async function init3DCoin() {
     } catch (e) {
         console.warn('Three/Loader import failed', e);
         showFallback();
+        coinInitDone = true;
     }
 }
 
