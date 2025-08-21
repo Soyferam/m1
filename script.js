@@ -1,6 +1,50 @@
 // Telegram Web App initialization
 let tg = null;
 
+// Loading screen management
+let loadingProgress = 0;
+let loadingSteps = [
+    { name: 'Инициализация...', progress: 10 },
+    { name: 'Загрузка ресурсов...', progress: 30 },
+    { name: 'Подготовка 3D модели...', progress: 60 },
+    { name: 'Загрузка 3D монетки...', progress: 90 },
+    { name: 'Готово!', progress: 100 }
+];
+
+function updateLoadingProgress(step, customText = null) {
+    const progressFill = document.querySelector('.progress-fill');
+    const progressText = document.querySelector('.progress-text');
+    const loadingText = document.querySelector('.loading-text');
+    
+    if (progressFill && progressText && loadingText) {
+        const targetProgress = loadingSteps[step]?.progress || step;
+        const text = customText || loadingSteps[step]?.name || 'Загрузка...';
+        
+        loadingProgress = targetProgress;
+        progressFill.style.width = `${targetProgress}%`;
+        progressText.textContent = `${targetProgress}%`;
+        loadingText.textContent = text;
+    }
+}
+
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const appContainer = document.querySelector('.app-container');
+    
+    if (loadingScreen && appContainer) {
+        // Скрываем экран загрузки
+        loadingScreen.classList.add('hidden');
+        
+        // Показываем основное приложение
+        appContainer.classList.add('loaded');
+        
+        // Удаляем экран загрузки после анимации
+        setTimeout(() => {
+            loadingScreen.remove();
+        }, 500);
+    }
+}
+
 // Initialize Telegram Web App
 function initTelegramApp() {
     try {
@@ -960,6 +1004,9 @@ async function initTelegramSDKFullscreen() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing app...');
     
+    // Начинаем с экрана загрузки
+    updateLoadingProgress(0, 'Инициализация...');
+    
     // Пытаемся открыть мини‑апп в полноэкранном режиме как можно раньше
     initTelegramSDKFullscreen();
     
@@ -992,6 +1039,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize snake animation
     initSnakeAnimation();
+    
+    // Обновляем прогресс после инициализации основных компонентов
+    updateLoadingProgress(1, 'Загрузка ресурсов...');
+    
+    // Инициализируем 3D монетку с небольшой задержкой для плавности
+    setTimeout(() => {
+        init3DCoin();
+    }, 500);
     
     // Initialize scroll control (disabled: remove auto-snap/auto-scroll on home)
     // setupScrollListener();
@@ -1746,6 +1801,9 @@ async function init3DCoin() {
     const stage = document.getElementById('coin-stage');
     if (!stage) return;
     if (coinInitDone && stage.children.length) return; // уже инициализировано
+    
+    // Обновляем прогресс загрузки
+    updateLoadingProgress(2, 'Подготовка 3D модели...');
 
     const showImage = (srcs = []) => {
         stage.innerHTML = '';
@@ -1875,6 +1933,7 @@ async function init3DCoin() {
             loader.setMeshoptDecoder(MeshoptDecoder);
         }
         let loaded = false;
+        updateLoadingProgress(3, 'Загрузка 3D монетки...');
         loader.load(url, (gltf) => {
             loaded = true;
             model = gltf.scene;
@@ -1891,13 +1950,36 @@ async function init3DCoin() {
             scene.add(model);
             // стартовый мягкий проворот при загрузке
             kickSpin(1);
+            
+            // Обновляем прогресс и скрываем экран загрузки
+            updateLoadingProgress(4, 'Готово!');
+            setTimeout(() => {
+                hideLoadingScreen();
+            }, 500);
         }, undefined, (err) => {
             console.error('GLB load error:', err);
             showFallback();
+            
+            // Даже при ошибке скрываем экран загрузки
+            updateLoadingProgress(4, 'Готово!');
+            setTimeout(() => {
+                hideLoadingScreen();
+            }, 500);
         });
 
         // таймаут на случай тишины от loader'а
-        setTimeout(() => { if (!loaded) { console.warn('GLB load timeout, showing fallback'); showFallback(); } }, 4000);
+        setTimeout(() => { 
+            if (!loaded) { 
+                console.warn('GLB load timeout, showing fallback'); 
+                showFallback(); 
+                
+                // При таймауте тоже скрываем экран загрузки
+                updateLoadingProgress(4, 'Готово!');
+                setTimeout(() => {
+                    hideLoadingScreen();
+                }, 500);
+            } 
+        }, 4000);
 
         const onDown = (e) => {
             isDown = true;
@@ -1986,8 +2068,8 @@ async function init3DCoin() {
     }
 }
 
-// initialize 3D coin lazily
-setTimeout(() => { init3DCoin(); }, 0);
+// initialize 3D coin lazily - теперь управляется через экран загрузки
+// setTimeout(() => { init3DCoin(); }, 0);
 
 // при переходе на вкладку Реварды — убеждаемся, что инициализация выполнена и размер обновлён
 (function hookRewardsInit() {
