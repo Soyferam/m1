@@ -2317,8 +2317,8 @@ input, textarea {
     border-top-left-radius: 20px !important;
     border-top-right-radius: 20px !important;
     border: 1px solid rgba(255,255,255,0.08) !important;
-    padding: 12px 16px 20px !important;
-    max-height: 80vh !important;
+    padding: 8px 16px 16px !important;
+    max-height: 85vh !important;
     overflow: auto !important;
 }
 
@@ -2350,54 +2350,46 @@ input, textarea {
     height: 5px !important;
     border-radius: 3px !important;
     background: rgba(255,255,255,0.3) !important;
-    margin: 6px auto 10px !important;
+    margin: 6px auto 8px !important;
     cursor: grab !important;
     transition: background 0.2s ease !important;
-    /* Увеличиваем touch target для мобильных устройств */
-    min-height: 44px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    /* Добавляем невидимую область для лучшего touch */
-    position: relative !important;
+    /* Убираем лишние стили, которые создавали серый квадрат */
+    min-height: auto !important;
+    display: block !important;
+    align-items: unset !important;
+    justify-content: unset !important;
+    position: static !important;
 }
 
+#character-edit-modal .sheet-grabber:hover {
+    background: rgba(255,255,255,0.5) !important;
+}
+
+#character-edit-modal .sheet-grabber:active {
+    background: rgba(255,255,255,0.6) !important;
+    cursor: grabbing !important;
+}
+
+/* Убираем лишние псевдоэлементы, которые создавали серый квадрат */
 #character-edit-modal .sheet-grabber::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 48px;
-    height: 5px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 3px;
-    transition: background 0.2s ease;
-}
-
-#character-edit-modal .sheet-grabber:hover::before {
-    background: rgba(255,255,255,0.5);
-}
-
-#character-edit-modal .sheet-grabber:active::before {
-    background: rgba(255,255,255,0.6);
+    display: none !important;
 }
 
 /* Улучшаем заголовок для лучшего touch взаимодействия */
 #character-edit-modal .sheet-header {
-    min-height: 44px !important;
-    padding: 8px 0 !important;
+    min-height: 32px !important;
+    padding: 4px 0 !important;
 }
 
 /* Edit sections and items */
 .edit-section {
-    margin: 20px 0;
+    margin: 16px 0;
 }
 
 .edit-subtitle {
     font-size: 18px;
     font-weight: 700;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     color: #fff;
     text-align: center;
 }
@@ -2405,8 +2397,8 @@ input, textarea {
 .items-carousel {
     position: relative;
     overflow: hidden;
-    margin-bottom: 20px;
-    padding: 8px 0; /* Добавляем отступы сверху и снизу */
+    margin-bottom: 16px;
+    padding: 4px 0; /* Уменьшаем отступы */
 }
 
 .carousel-container {
@@ -2418,7 +2410,7 @@ input, textarea {
     display: flex;
     gap: 12px;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 8px 16px; /* Увеличиваем отступы сверху и снизу */
+    padding: 4px 16px; /* Уменьшаем отступы */
 }
 
 .edit-item {
@@ -2431,7 +2423,7 @@ input, textarea {
     padding: 12px 8px;
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid transparent;
-    margin: 4px 0; /* Добавляем отступы сверху и снизу */
+    margin: 2px 0; /* Уменьшаем отступы */
 }
 
 .edit-item:hover {
@@ -2463,7 +2455,7 @@ input, textarea {
 
 /* Edit actions */
 .edit-actions {
-    margin-top: 24px;
+    margin-top: 20px;
     text-align: center;
 }
 

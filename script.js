@@ -447,6 +447,9 @@ function initSettingsButton() {
     const sheet = document.getElementById('settings-modal');
     if (!sheet) return;
     
+    const content = sheet.querySelector('.sheet-content');
+    if (!content) return;
+    
     // Функция закрытия модального окна
     const closeSettingsModal = () => {
         sheet.style.display = 'none';
@@ -511,15 +514,15 @@ function initSettingsButton() {
     let startY = 0, dy = 0, dragging = false;
     content.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
     content.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) content.style.transform = `translateY(${dy}px)`; }, { passive: true });
-    content.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) close(); content.style.transform = ''; }, { passive: true });
+    content.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) closeSettingsModal(); content.style.transform = ''; }, { passive: true });
     // Telegram Back Button
     try {
         const tg = window.Telegram && window.Telegram.WebApp;
         if (tg && tg.BackButton) {
-            tg.BackButton.onClick(close);
+            tg.BackButton.onClick(closeSettingsModal);
         }
     } catch(_) {}
-    if (backBtn) backBtn.addEventListener('click', close);
+    
     // Языки
     content.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
         const lang = btn.getAttribute('data-lang');
@@ -1262,6 +1265,14 @@ function openCharacterEditModal() {
     const modal = document.getElementById('character-edit-modal');
     if (!modal) return;
 
+    const content = modal.querySelector('.character-edit-content');
+    if (content) {
+        // Сбрасываем предыдущие состояния
+        content.style.transform = '';
+        content.style.opacity = '';
+        content.style.transition = '';
+    }
+
     modal.style.display = 'block';
     
     // Lock background scroll
@@ -1530,8 +1541,12 @@ function initCharacterEditModal() {
         currentY = e.touches[0].clientY;
         const diff = currentY - startY;
         
-        if (diff > 50) { // Swipe down
-            content.style.transform = `translateY(${Math.min(diff, 100)}px)`;
+        if (diff > 0) { // Swipe down
+            // Плавно двигаем контент вниз
+            content.style.transform = `translateY(${Math.min(diff, 200)}px)`;
+            // Добавляем прозрачность для плавного исчезновения
+            const opacity = Math.max(0.3, 1 - (diff / 200));
+            content.style.opacity = opacity;
         }
     }, { passive: true });
 
@@ -1541,9 +1556,23 @@ function initCharacterEditModal() {
         const diff = currentY - startY;
         
         if (diff > 100) { // Swipe down threshold
-            closeCharacterEditModal();
+            // Плавно закрываем модал
+            content.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            content.style.transform = 'translateY(100%)';
+            content.style.opacity = '0';
+            
+            setTimeout(() => {
+                closeCharacterEditModal();
+            }, 300);
         } else {
+            // Возвращаем на место с анимацией
+            content.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
             content.style.transform = 'translateY(0)';
+            content.style.opacity = '1';
+            
+            setTimeout(() => {
+                content.style.transition = '';
+            }, 300);
         }
         
         isSwipeDown = false;
@@ -1568,8 +1597,12 @@ function initCharacterEditModal() {
             mouseCurrentY = e.clientY;
             const diff = mouseCurrentY - mouseStartY;
             
-            if (diff > 50) {
-                content.style.transform = `translateY(${Math.min(diff, 100)}px)`;
+            if (diff > 0) {
+                // Плавно двигаем контент вниз
+                content.style.transform = `translateY(${Math.min(diff, 200)}px)`;
+                // Добавляем прозрачность для плавного исчезновения
+                const opacity = Math.max(0.3, 1 - (diff / 200));
+                content.style.opacity = opacity;
             }
         });
 
@@ -1579,9 +1612,23 @@ function initCharacterEditModal() {
             const diff = mouseCurrentY - mouseStartY;
             
             if (diff > 100) {
-                closeCharacterEditModal();
+                // Плавно закрываем модал
+                content.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                content.style.transform = 'translateY(100%)';
+                content.style.opacity = '0';
+                
+                setTimeout(() => {
+                    closeCharacterEditModal();
+                }, 300);
             } else {
+                // Возвращаем на место с анимацией
+                content.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
                 content.style.transform = 'translateY(0)';
+                content.style.opacity = '1';
+                
+                setTimeout(() => {
+                    content.style.transition = '';
+                }, 300);
             }
             
             isMouseDown = false;
