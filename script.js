@@ -510,18 +510,18 @@ function initSettingsButton() {
     // Свайп вниз для закрытия
     let startY = 0, dy = 0, dragging = false;
     sheet.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
-    sheet.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) content.style.transform = `translateY(${dy}px)`; }, { passive: true });
-    sheet.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) close(); content.style.transform = ''; }, { passive: true });
+    sheet.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }, { passive: true });
+    sheet.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) closeSettingsModal(); sheet.style.transform = ''; }, { passive: true });
     // Telegram Back Button
     try {
         const tg = window.Telegram && window.Telegram.WebApp;
         if (tg && tg.BackButton) {
-            tg.BackButton.onClick(close);
+            tg.BackButton.onClick(closeSettingsModal);
         }
     } catch(_) {}
-    if (backBtn) backBtn.addEventListener('click', close);
+    // Убираем ссылку на несуществующую backBtn
     // Языки
-    content.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
+    sheet.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
         const lang = btn.getAttribute('data-lang');
         showNotification(`Язык: ${lang}`);
     }));
@@ -1329,48 +1329,56 @@ function initCharacterEditModal() {
     const resetBtn = modal.querySelector('.reset-btn');
     const acceptBtn = modal.querySelector('.accept-btn');
     const editItems = modal.querySelectorAll('.edit-item');
-    const grabber = modal.querySelector('.sheet-grabber');
 
-    // Очищаем все существующие обработчики событий
-    const newModal = modal.cloneNode(true);
-    modal.parentNode.replaceChild(newModal, modal);
-    
-    // Получаем обновленные ссылки
-    const updatedModal = document.getElementById('character-edit-modal');
-    const updatedContent = updatedModal.querySelector('.character-edit-content');
-    const updatedBackBtn = updatedModal.querySelector('.sheet-back-btn');
-    const updatedResetBtn = updatedModal.querySelector('.reset-btn');
-    const updatedAcceptBtn = updatedModal.querySelector('.accept-btn');
-    const updatedEditItems = updatedModal.querySelectorAll('.edit-item');
-    const updatedGrabber = updatedModal.querySelector('.sheet-grabber');
-
-    // Основной обработчик закрытия модального окна - только при клике на overlay
-    updatedModal.addEventListener('click', (e) => {
+    // Close modal handlers - возвращаем как было
+    modal.addEventListener('click', (e) => {
         // Закрываем модальное окно только при клике на overlay (фон), а не на его содержимое
-        if (e.target === updatedModal) {
+        if (e.target === modal && !e.target.closest('.character-edit-content')) {
             closeCharacterEditModal();
         }
         
         // Дополнительная защита - не закрываем модал при клике на элементы с data-no-close
         if (e.target.closest('[data-no-close="true"]')) {
             e.stopPropagation();
-            return;
+            e.stopImmediatePropagation();
         }
     });
 
     // Back button handler
-    if (updatedBackBtn) {
-        updatedBackBtn.addEventListener('click', closeCharacterEditModal);
+    if (backBtn) {
+        backBtn.addEventListener('click', closeCharacterEditModal);
     }
     
+    // Prevent modal from closing when clicking on header content
+    const header = modal.querySelector('.sheet-header');
+    if (header) {
+        header.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+    
+    // Prevent modal from closing when clicking on section headers
+    const sectionHeaders = modal.querySelectorAll('.edit-subtitle');
+    sectionHeaders.forEach(header => {
+        header.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+
     // Reset button handler
-    if (updatedResetBtn) {
-        updatedResetBtn.addEventListener('click', (e) => {
+    if (resetBtn) {
+        resetBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Дополнительная защита от всплытия события
+            setTimeout(() => {
+                e.stopImmediatePropagation();
+            }, 0);
             
             // Remove all selections
-            updatedEditItems.forEach(item => item.classList.remove('selected'));
+            editItems.forEach(item => item.classList.remove('selected'));
             showNotification('Настройки сброшены');
             try {
                 const tg = window.Telegram && window.Telegram.WebApp;
@@ -1378,15 +1386,23 @@ function initCharacterEditModal() {
                 else if (navigator.vibrate) navigator.vibrate(20);
             } catch(_) {}
         });
+        
+        // Дополнительная защита - предотвращаем всплытие события
+        resetBtn.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
+        
+        resetBtn.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+        });
     }
 
     // Accept button handler
-    if (updatedAcceptBtn) {
-        updatedAcceptBtn.addEventListener('click', (e) => {
-            e.preventDefault();
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             
-            const selectedItems = updatedModal.querySelectorAll('.edit-item.selected');
+            const selectedItems = modal.querySelectorAll('.edit-item.selected');
             if (selectedItems.length === 0) {
                 showNotification('Выберите хотя бы один предмет');
                 return;
@@ -1413,16 +1429,22 @@ function initCharacterEditModal() {
         });
     }
 
-    // Edit item selection
-    updatedEditItems.forEach(item => {
+    // Edit item selection - исправляем логику выбора
+    editItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Дополнительная защита от всплытия события
+            setTimeout(() => {
+                e.stopImmediatePropagation();
+            }, 0);
             
             const type = item.getAttribute('data-type');
             
             // Remove selection from other items of the same type
-            updatedModal.querySelectorAll(`.edit-item[data-type="${type}"]`).forEach(otherItem => {
+            modal.querySelectorAll(`.edit-item[data-type="${type}"]`).forEach(otherItem => {
                 otherItem.classList.remove('selected');
             });
             
@@ -1437,9 +1459,14 @@ function initCharacterEditModal() {
         });
     });
 
-    // Touch/swipe support for carousels
-    const carouselElements = updatedModal.querySelectorAll('.items-carousel');
+    // Touch/swipe support for carousels - исправляем логику свайпов
+    const carouselElements = modal.querySelectorAll('.items-carousel');
     carouselElements.forEach(carousel => {
+        // Prevent modal from closing when clicking on carousel
+        carousel.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
         const track = carousel.querySelector('.carousel-track');
         let startX = 0;
         let currentX = 0;
@@ -1447,7 +1474,6 @@ function initCharacterEditModal() {
         let startTransform = 0;
 
         carousel.addEventListener('touchstart', (e) => {
-            e.stopPropagation();
             startX = e.touches[0].clientX;
             isDragging = true;
             
@@ -1459,7 +1485,6 @@ function initCharacterEditModal() {
 
         carousel.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-            e.stopPropagation();
             currentX = e.touches[0].clientX;
             const diff = startX - currentX;
             
@@ -1471,9 +1496,8 @@ function initCharacterEditModal() {
             track.style.transition = 'none';
         }, { passive: true });
 
-        carousel.addEventListener('touchend', (e) => {
+        carousel.addEventListener('touchend', () => {
             if (!isDragging) return;
-            e.stopPropagation();
             isDragging = false;
             
             const diff = startX - currentX;
@@ -1531,66 +1555,32 @@ function initCharacterEditModal() {
         }, { passive: true });
     });
 
-    // Swipe to close - только через граббер
+    // Swipe to close (like settings modal)
     let startY = 0;
     let currentY = 0;
-    let isDraggingModal = false;
 
-    // Обработчик для граббера
-    if (updatedGrabber) {
-        // Обработчик для touch устройств
-        updatedGrabber.addEventListener('touchstart', (e) => {
-            e.stopPropagation();
-            startY = e.touches[0].clientY;
-            isDraggingModal = true;
-            updatedGrabber.classList.add('swiping');
-        }, { passive: true });
+    modal.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+    }, { passive: true });
 
-        updatedGrabber.addEventListener('touchmove', (e) => {
-            if (!isDraggingModal) return;
-            e.stopPropagation();
-            currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-            
-            if (diff > 50) { // Swipe down
-                updatedContent.style.transform = `translateY(${Math.min(diff, 100)}px)`;
-            }
-        }, { passive: true });
-
-        updatedGrabber.addEventListener('touchend', (e) => {
-            if (!isDraggingModal) return;
-            e.stopPropagation();
-            isDraggingModal = false;
-            updatedGrabber.classList.remove('swiping');
-            
-            const diff = currentY - startY;
-            
-            if (diff > 100) { // Swipe down threshold
-                closeCharacterEditModal();
-            } else {
-                updatedContent.style.transform = 'translateY(0)';
-            }
-        }, { passive: true });
-
-        // Обработчик для десктопных устройств (двойной клик по грабберу закрывает модал)
-        let clickCount = 0;
-        let clickTimer = null;
+    modal.addEventListener('touchmove', (e) => {
+        currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
         
-        updatedGrabber.addEventListener('click', (e) => {
-            e.stopPropagation();
-            clickCount++;
-            
-            if (clickCount === 1) {
-                clickTimer = setTimeout(() => {
-                    clickCount = 0;
-                }, 300);
-            } else if (clickCount === 2) {
-                clearTimeout(clickTimer);
-                clickCount = 0;
-                closeCharacterEditModal();
-            }
-        });
-    }
+        if (diff > 50) { // Swipe down
+            content.style.transform = `translateY(${Math.min(diff, 100)}px)`;
+        }
+    }, { passive: true });
+
+    modal.addEventListener('touchend', () => {
+        const diff = currentY - startY;
+        
+        if (diff > 100) { // Swipe down threshold
+            closeCharacterEditModal();
+        } else {
+            content.style.transform = 'translateY(0)';
+        }
+    }, { passive: true });
 
     // Telegram Back Button handler
     try {
@@ -1601,13 +1591,8 @@ function initCharacterEditModal() {
     } catch(_) {}
 
     // Block scroll on modal
-    updatedModal.addEventListener('touchmove', (e) => { 
-        if (e.cancelable) e.preventDefault(); 
-    }, { passive: false });
-    
-    updatedModal.addEventListener('wheel', (e) => { 
-        e.preventDefault(); 
-    }, { passive: false });
+    modal.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+    modal.addEventListener('wheel', (e) => { e.preventDefault(); }, { passive: false });
 }
 
 // Snake Animation
@@ -2062,7 +2047,7 @@ async function init3DCoin() {
             // Даже при ошибке скрываем экран загрузки - ВРЕМЕННО ОТКЛЮЧЕНО
             // updateLoadingProgress(4, 'Готово!');
             // setTimeout(() => {
-            //     hideLoadingProgress();
+            //     hideLoadingScreen();
             // }, 500);
         });
 
