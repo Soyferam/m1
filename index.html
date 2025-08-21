@@ -24,13 +24,8 @@
     <link rel="preload" href="assets/snake-red.png" as="image">
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-        }
-    }
-    </script>
+    <!-- Model Viewer for 3D models -->
+    <script type="module" src="https://unpkg.com/@google/model-viewer@^3.4.0/dist/model-viewer.min.js"></script>
     <!-- Lottie + pako (для .tgs) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
@@ -277,7 +272,21 @@
                 </section>
                 <section id="view-rewards" class="view" aria-hidden="true">
                     <div class="coin-wrapper">
-                        <div id="coin-stage" class="coin-stage" data-model="assets/result-webp.glb" aria-label="3D монета"></div>
+                        <model-viewer 
+                            id="coin-stage" 
+                            class="coin-stage" 
+                            src="assets/result-webp.glb"
+                            environment-image="neutral"
+                            exposure="1"
+                            shadow-intensity="0"
+                            shadow-softness="0"
+                            camera-controls
+                            auto-rotate
+                            auto-rotate-delay="0"
+                            rotation-per-second="30deg"
+                            interaction-prompt="none"
+                            aria-label="3D монета">
+                        </model-viewer>
                     </div>
 
                     <!-- Rewards Section -->

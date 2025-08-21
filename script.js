@@ -1110,7 +1110,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Инициализируем 3D монетку с небольшой задержкой для плавности
     setTimeout(() => {
         init3DCoin();
-    }, 500);
+    }, 1000); // Увеличиваем задержку для загрузки model-viewer
     
     // Initialize scroll control (disabled: remove auto-snap/auto-scroll on home)
     // setupScrollListener();
@@ -1885,109 +1885,24 @@ async function init3DCoin() {
     if (!stage) return;
     if (coinInitDone && stage.children.length) return; // уже инициализировано
     
-    // Обновляем прогресс загрузки - ОТКЛЮЧЕНО
-    // updateLoadingProgress(2, 'Подготовка 3D модели...');
-
-    const showImage = (srcs = []) => {
-        stage.innerHTML = '';
-        const img = document.createElement('img');
-        img.className = 'coin-fallback';
-        let idx = 0;
-        const tryNext = () => {
-            if (idx >= srcs.length) return; // нечего больше пробовать
-            img.src = srcs[idx++];
-        };
-        img.onerror = tryNext;
-        img.alt = ''; /* убираем текст "Монета" */
-        stage.appendChild(img);
-        tryNext();
-    };
-
-    const showFallback = () => {
-        // Пробуем набор популярных имён
-        showImage([
-            stage.getAttribute('data-model') || '',
-            'assets/result-webp.webp',
-            'assets/result-webp.png',
-            'assets/result-webp',
-            'assets/coin.webp',
-            'assets/coin.png',
-            'assets/ton-icon.png' // Используем иконку TON как fallback
-        ].filter(Boolean));
-    };
-
-    // Если явно указана картинка — сразу показываем как изображение
-    const attr = stage.getAttribute('data-model') || '';
-    if (/(\.webp|\.png|\.jpg|\.jpeg|\.gif)$/i.test(attr)) {
-        showImage([attr]);
-        coinInitDone = true;
+    // Проверяем, что model-viewer загружен
+    if (typeof customElements === 'undefined' || !customElements.get('model-viewer')) {
+        console.warn('Model-viewer not loaded, waiting...');
+        // Ждем загрузки model-viewer
+        setTimeout(() => init3DCoin(), 500);
         return;
     }
 
+    // Убираем функцию showImage - она больше не нужна
+
+    const showFallback = () => {
+        // Убираем fallback изображения - они перекрывают 3D монетку
+        console.log('Model failed to load, but keeping model-viewer visible');
+    };
+
+    // Работаем только с 3D моделями, убираем проверку на изображения
+
     try {
-        const [
-            { WebGLRenderer, Scene, PerspectiveCamera, SRGBColorSpace, ACESFilmicToneMapping, HemisphereLight, DirectionalLight, Box3, Vector3 },
-            { GLTFLoader },
-            { MeshoptDecoder }
-        ] = await Promise.all([
-            import('https://unpkg.com/three@0.160.0/build/three.module.js'),
-            import('https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js'),
-            import('https://unpkg.com/three@0.160.0/examples/jsm/libs/meshopt_decoder.module.js')
-        ]).then(([three, gltf, meshopt]) => [
-            {
-                WebGLRenderer: three.WebGLRenderer,
-                Scene: three.Scene,
-                PerspectiveCamera: three.PerspectiveCamera,
-                SRGBColorSpace: three.SRGBColorSpace,
-                ACESFilmicToneMapping: three.ACESFilmicToneMapping,
-                HemisphereLight: three.HemisphereLight,
-                DirectionalLight: three.DirectionalLight,
-                Box3: three.Box3,
-                Vector3: three.Vector3,
-            },
-            { GLTFLoader: gltf.GLTFLoader },
-            { MeshoptDecoder: meshopt.MeshoptDecoder }
-        ]);
-
-        const renderer = new WebGLRenderer({ antialias: true, alpha: true });
-        renderer.outputColorSpace = SRGBColorSpace;
-        renderer.toneMapping = ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.4; // ещё ярче рендер
-        renderer.setClearColor(0x000000, 0);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-
-        const scene = new Scene();
-        const camera = new PerspectiveCamera(35, 1, 0.1, 100);
-        camera.position.set(0, 0, 2.6);
-
-        // lights (чуть ярче + контровой)
-        const hemi = new HemisphereLight(0xffffff, 0x222233, 1.45);
-        const dir = new DirectionalLight(0xffffff, 1.6);
-        dir.position.set(3, 5, 4);
-        const rim = new DirectionalLight(0xffffff, 0.9);
-        rim.position.set(-3, 3, -4);
-        scene.add(hemi, dir, rim);
-
-        stage.innerHTML = '';
-        stage.appendChild(renderer.domElement);
-
-        function resize() {
-            const rect = stage.getBoundingClientRect();
-            const w = Math.max(100, Math.floor(rect.width));
-            const h = Math.max(100, Math.floor(rect.height));
-            renderer.setSize(w, h); // обновляем и буфер, и CSS-стили
-            camera.aspect = w / h;
-            camera.updateProjectionMatrix();
-        }
-        resize();
-        new ResizeObserver(resize).observe(stage);
-
-        let model = null;
-        let isDown = false;
-        let lastX = 0, lastY = 0;
-        let velX = 0, velY = 0;
-        let lastInputAt = performance.now();
-
         // Настройка чувствительности под устройство и размер сцены
         const isCoarsePointer = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || 'ontouchstart' in window;
         const baseSensY = 0.0045;
@@ -2005,148 +1920,152 @@ async function init3DCoin() {
 
         // Лёгкий импульс вращения
         const kickSpin = (strength = 1) => {
-            velY = 0.022 * strength;   // вокруг вертикали (y)
-            velX = 0.004 * strength;   // небольшой наклон (x)
-            lastInputAt = performance.now();
+            if (stage.modelViewer) {
+                const currentRotation = stage.modelViewer.getCameraOrbit();
+                const newRotation = {
+                    ...currentRotation,
+                    theta: currentRotation.theta + (0.022 * strength),
+                    phi: Math.max(-clampX, Math.min(clampX, currentRotation.phi + (0.004 * strength)))
+                };
+                stage.modelViewer.cameraOrbit = `${newRotation.theta}rad ${newRotation.phi}rad ${newRotation.radius}m`;
+            }
         };
 
-        const url = attr || 'assets/result-webp.glb';
-        const loader = new GLTFLoader();
-        // ВАЖНО: настраиваем декодер meshopt до загрузки
-        if (MeshoptDecoder) {
-            loader.setMeshoptDecoder(MeshoptDecoder);
-        }
-        let loaded = false;
-        // updateLoadingProgress(3, 'Загрузка 3D монетки...'); // ВРЕМЕННО ОТКЛЮЧЕНО
-        loader.load(url, (gltf) => {
-            loaded = true;
-            model = gltf.scene;
-            const box = new Box3().setFromObject(model);
-            const size = new Vector3();
-            const center = new Vector3();
-            box.getSize(size);
-            box.getCenter(center);
-            model.position.sub(center);
-            const targetSize = 1.35; // масштаб больше, чтобы меньше пустого места сверху/снизу
-            const maxDim = Math.max(size.x, size.y, size.z) || 1;
-            const scale = targetSize / maxDim;
-            model.scale.setScalar(scale);
-            scene.add(model);
-            // стартовый мягкий проворот при загрузке
-            kickSpin(1);
-            
-            // Обновляем прогресс и скрываем экран загрузки - ВРЕМЕННО ОТКЛЮЧЕНО
-            // updateLoadingProgress(4, 'Готово!');
-            // setTimeout(() => {
-            //     hideLoadingScreen();
-            // }, 500);
-        }, undefined, (err) => {
-            console.error('GLB load error:', err);
-            showFallback();
-            
-            // Даже при ошибке скрываем экран загрузки - ВРЕМЕННО ОТКЛЮЧЕНО
-            // updateLoadingProgress(4, 'Готово!');
-            // setTimeout(() => {
-            //     hideLoadingScreen();
-            // }, 500);
-        });
+        // Инициализация model-viewer
+        let isDown = false;
+        let lastX = 0, lastY = 0;
+        let velX = 0, velY = 0;
+        let lastInputAt = performance.now();
 
-        // таймаут на случай тишины от loader'а
-        setTimeout(() => { 
-            if (!loaded) { 
-                console.warn('GLB load timeout, showing fallback'); 
-                showFallback(); 
-                
-                // При таймауте тоже скрываем экран загрузки - ВРЕМЕННО ОТКЛЮЧЕНО
-                // updateLoadingProgress(4, 'Готово!');
-                // setTimeout(() => {
-                //     hideLoadingProgress();
-                // }, 500);
-            } 
-        }, 4000);
-        
-        // Принудительно показываем fallback через 5 секунд, если ничего не загрузилось
-        setTimeout(() => {
-            if (!loaded && !stage.children.length) {
-                console.warn('Force showing fallback after 5 seconds');
-                showFallback();
-            }
-        }, 5000);
-
-        const onDown = (e) => {
+        // Жёстко отделяем жесты на монетке от прокрутки страницы
+        const onDownStop = (e) => { 
             isDown = true;
             lastX = (e.touches ? e.touches[0].clientX : e.clientX);
             lastY = (e.touches ? e.touches[0].clientY : e.clientY);
-            if (e.pointerId != null && stage.setPointerCapture) {
-                try { stage.setPointerCapture(e.pointerId); } catch(_) {}
-            }
+            if (e.cancelable) e.preventDefault(); 
+            e.stopPropagation(); 
         };
-        const onMove = (e) => {
-            if (!isDown || !model) return;
+        
+        const onMoveStop = (e) => { 
+            if (!isDown || !stage.modelViewer) return;
             const cx = (e.touches ? e.touches[0].clientX : e.clientX);
             const cy = (e.touches ? e.touches[0].clientY : e.clientY);
             const dx = cx - lastX;
             const dy = cy - lastY;
             lastX = cx; lastY = cy;
+            
             // Более высокая отзывчивость на мобильных/коурс-поинтерах
             const gain = isCoarsePointer ? 1.25 : 1.1;
             velY = dx * sensY;
             velX = dy * sensX;
-            model.rotation.y += velY * gain;
-            model.rotation.x = Math.max(-clampX, Math.min(clampX, model.rotation.x + velX * gain));
+            
+            const currentRotation = stage.modelViewer.getCameraOrbit();
+            const newRotation = {
+                ...currentRotation,
+                theta: currentRotation.theta + (velY * gain),
+                phi: Math.max(-clampX, Math.min(clampX, currentRotation.phi + (velX * gain)))
+            };
+            stage.modelViewer.cameraOrbit = `${newRotation.theta}rad ${newRotation.phi}rad ${newRotation.radius}m`;
+            
             lastInputAt = performance.now();
+            if (e.cancelable) e.preventDefault(); 
+            e.stopPropagation(); 
         };
-        const onUp = (e) => {
-            isDown = false;
-            lastInputAt = performance.now(); // старт отсчёта простоя с момента отпускания
-            if (e && e.pointerId != null && stage.releasePointerCapture) {
-                try { stage.releasePointerCapture(e.pointerId); } catch(_) {}
-            }
-        };
-
-        // Жёстко отделяем жесты на монетке от прокрутки страницы
-        const onDownStop = (e) => { onDown(e); if (e.cancelable) e.preventDefault(); e.stopPropagation(); };
-        const onMoveStop = (e) => { onMove(e); if (e.cancelable) e.preventDefault(); e.stopPropagation(); };
+        
         const onWheelStop = (e) => { if (e.cancelable) e.preventDefault(); e.stopPropagation(); };
 
         stage.addEventListener('pointerdown', onDownStop, { passive: false });
         stage.addEventListener('pointermove', onMoveStop, { passive: false });
-        window.addEventListener('pointerup', onUp, { passive: true });
+        window.addEventListener('pointerup', () => { isDown = false; lastInputAt = performance.now(); }, { passive: true });
         stage.addEventListener('touchstart', onDownStop, { passive: false });
         stage.addEventListener('touchmove', onMoveStop, { passive: false });
         stage.addEventListener('wheel', onWheelStop, { passive: false });
-        window.addEventListener('touchend', onUp, { passive: true });
+        window.addEventListener('touchend', () => { isDown = false; lastInputAt = performance.now(); }, { passive: true });
 
+        // Анимация инерции
         function animate() {
             requestAnimationFrame(animate);
+            if (!stage.modelViewer) return;
+            
             // чуть сильнее демпфирование — меньше инерции/"супер-отзывчивости"
             velX *= 0.975;
             velY *= 0.98;
-            if (model) {
-                model.rotation.y += velY;
-                model.rotation.x = Math.max(-clampX, Math.min(clampX, model.rotation.x + velX));
+            
+            const currentRotation = stage.modelViewer.getCameraOrbit();
+            const newRotation = {
+                ...currentRotation,
+                theta: currentRotation.theta + velY,
+                phi: Math.max(-clampX, Math.min(clampX, currentRotation.phi + velX))
+            };
+            stage.modelViewer.cameraOrbit = `${newRotation.theta}rad ${newRotation.phi}rad ${newRotation.radius}m`;
+            
                 const idleMs = performance.now() - lastInputAt;
                 if (idleMs > 250) {
                     const t = Math.min((idleMs - 250) / 500, 1);
                     const ease = 1 - Math.pow(1 - t, 3);
                     const k = 0.11 * ease; // ещё быстрее начинаем возвращать к центру
                     velX *= 0.9; velY *= 0.9;
-                    model.rotation.x += (0 - model.rotation.x) * k;
-                    model.rotation.y += (0 - model.rotation.y) * k;
-                    if (Math.abs(model.rotation.x) < 0.002) model.rotation.x = 0;
-                    if (Math.abs(model.rotation.y) < 0.002) model.rotation.y = 0;
-                }
+                
+                const targetRotation = {
+                    ...currentRotation,
+                    theta: 0,
+                    phi: 0
+                };
+                
+                const interpolatedRotation = {
+                    ...currentRotation,
+                    theta: currentRotation.theta + (targetRotation.theta - currentRotation.theta) * k,
+                    phi: currentRotation.phi + (targetRotation.phi - currentRotation.phi) * k
+                };
+                
+                stage.modelViewer.cameraOrbit = `${interpolatedRotation.theta}rad ${interpolatedRotation.phi}rad ${interpolatedRotation.radius}m`;
+                
+                if (Math.abs(velX) < 0.002) velX = 0;
+                if (Math.abs(velY) < 0.002) velY = 0;
             }
-            renderer.render(scene, camera);
         }
         animate();
+
+        // Обработчик загрузки модели
+        stage.addEventListener('load', () => {
+            console.log('Model loaded successfully');
+            
+            // Принудительно отключаем тени и увеличиваем маску
+            if (stage.modelViewer) {
+                stage.modelViewer.shadowIntensity = 0;
+                stage.modelViewer.shadowSoftness = 0;
+                // Убираем любые темные оверлеи
+                stage.modelViewer.style.setProperty('--shadow-color', 'transparent');
+                stage.modelViewer.style.setProperty('--shadow-intensity', '0');
+                stage.modelViewer.style.setProperty('--shadow-softness', '0');
+                
+                // Увеличиваем маску сверху для убирания черной тени
+                stage.modelViewer.style.setProperty('clip-path', 'inset(-15px -15px -15px -15px)');
+                stage.modelViewer.style.setProperty('transform', 'scale(1.15)');
+                stage.modelViewer.style.setProperty('transform-origin', 'center center');
+                
+                // Убираем любые темные элементы
+                stage.modelViewer.style.setProperty('overflow', 'visible');
+                stage.modelViewer.style.setProperty('box-shadow', 'none');
+                stage.modelViewer.style.setProperty('border', 'none');
+            }
+            
+            // стартовый мягкий проворот при загрузке
+            kickSpin(1);
+        });
+
+        // Обработчик ошибки загрузки - просто логируем
+        stage.addEventListener('error', (error) => {
+            console.error('Model load error:', error);
+        });
+
+        // Убираем таймаут - model-viewer сам обрабатывает загрузку
 
         const rewardsView = document.getElementById('view-rewards');
         const visibilityObserver = new MutationObserver(() => {
             const hidden = rewardsView.getAttribute('aria-hidden') === 'true';
-            renderer.domElement.style.visibility = hidden ? 'hidden' : 'visible';
+            stage.style.visibility = hidden ? 'hidden' : 'visible';
             if (!hidden) {
-                resize();
                 // при входе на вкладку — лёгкий автопроворот
                 kickSpin(0.8);
             }
@@ -2155,8 +2074,7 @@ async function init3DCoin() {
 
         coinInitDone = true;
     } catch (e) {
-        console.warn('Three/Loader import failed', e);
-        showFallback();
+        console.warn('Model-viewer initialization failed', e);
         coinInitDone = true;
     }
 }
@@ -2174,12 +2092,13 @@ async function init3DCoin() {
             if (idx === rewardsBtnIndex) {
                 init3DCoin();
                 const stage = document.getElementById('coin-stage');
-                if (stage) {
-                    // небольшая задержка для пересчёта размеров
+                if (stage && stage.modelViewer) {
+                    // небольшая задержка для пересчёта размеров model-viewer
                     setTimeout(() => {
-                        const evt = new Event('resize');
-                        window.dispatchEvent(evt);
-                    }, 60);
+                        if (stage.modelViewer) {
+                            stage.modelViewer.requestUpdate();
+                        }
+                    }, 100);
                 }
             }
         });

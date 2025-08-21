@@ -1296,11 +1296,66 @@ input, textarea {
     -ms-touch-action: none;
 }
 
-.coin-stage img.coin-fallback {
+/* Model viewer specific styles */
+.coin-stage model-viewer {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    display: block;
+    border-radius: 20px;
+    --poster-color: transparent;
+    --progress-bar-color: transparent;
+    --progress-mask: transparent;
+    /* Убираем все тени и темные элементы */
+    --shadow-color: transparent;
+    --shadow-intensity: 0;
+    --shadow-softness: 0;
+    filter: brightness(1.1) contrast(1.1);
+    /* Увеличиваем маску сверху для убирания черной тени */
+    clip-path: inset(-10px -10px -10px -10px);
+    transform: scale(1.1);
+    transform-origin: center center;
+}
+
+/* Убираем стили для fallback изображений */
+.coin-stage img.coin-fallback {
+    display: none !important;
+}
+
+/* Дополнительные стили для убирания темных элементов */
+.coin-stage model-viewer::part(default-progress-bar) {
+    display: none !important;
+}
+
+.coin-stage model-viewer::part(default-progress-mask) {
+    display: none !important;
+}
+
+.coin-stage model-viewer::part(interaction-prompt) {
+    display: none !important;
+}
+
+/* Убираем любые темные оверлеи */
+.coin-stage model-viewer::before,
+.coin-stage model-viewer::after {
+    display: none !important;
+}
+
+/* Дополнительные стили для убирания черной тени сверху */
+.coin-stage model-viewer {
+    overflow: visible !important;
+}
+
+.coin-stage model-viewer canvas {
+    margin-top: -10px !important;
+    margin-bottom: -10px !important;
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+}
+
+/* Убираем любые темные границы или рамки */
+.coin-stage model-viewer * {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 /* Rewards view positioning for coin under top bar */
@@ -1329,7 +1384,7 @@ input, textarea {
 }
 
 #view-rewards .coin-stage > canvas,
-#view-rewards .coin-stage > img.coin-fallback {
+#view-rewards .coin-stage > model-viewer {
     max-width: 100%;
     max-height: 100%;
     width: 100% !important;
