@@ -471,6 +471,7 @@ function initSettingsButton() {
     // Открытие модального окна
     settingsBtn.addEventListener('click', () => {
         sheet.style.display = 'block';
+        
         // Lock background scroll
         try {
             window.__sheetScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
@@ -537,9 +538,6 @@ function initSettingsButton() {
                 else if (navigator.vibrate) navigator.vibrate(10);
             } catch(_) {}
             
-            // Здесь можно добавить логику смены языка
-            console.log('Selected language:', lang);
-            
             // Показываем уведомление
             showNotification(`Язык изменен на ${option.querySelector('span').textContent}`);
         });
@@ -561,9 +559,6 @@ function initSettingsButton() {
                 if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('medium');
                 else if (navigator.vibrate) navigator.vibrate(20);
             } catch(_) {}
-            
-            // Здесь можно добавить логику открытия чата поддержки
-            console.log('Support button clicked');
             
             // Показываем уведомление
             showNotification('Открываем чат поддержки...');

@@ -6,7 +6,53 @@
     backdrop-filter: blur(4px); 
     -webkit-backdrop-filter: blur(4px); 
     z-index: 1100; 
+    display: none; /* По умолчанию скрыто */
 }
+
+.sheet-overlay[style*="display: block"] {
+    display: flex !important; /* Принудительно показываем при display: block */
+}
+
+/* Дополнительные стили для модального окна настроек */
+#settings-modal {
+    z-index: 1200 !important; /* Высокий z-index */
+}
+
+#settings-modal .sheet-content {
+    z-index: 1201 !important; /* Еще выше для контента */
+    position: absolute !important; /* Абсолютное позиционирование для bottom sheet */
+    bottom: 0 !important; /* Прижимаем к низу экрана */
+    left: 0 !important;
+    right: 0 !important;
+    display: block !important; /* Принудительно показываем контент */
+}
+
+/* Убеждаемся, что модальное окно видимо */
+#settings-modal[style*="display: block"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Принудительно показываем контент при открытом модальном окне */
+#settings-modal[style*="display: block"] .sheet-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important; /* Убираем transform */
+}
+
+/* Переопределяем конфликтующие стили */
+#settings-modal[style*="display: block"] {
+    opacity: 1 !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+}
+
+#settings-modal[style*="display: block"] .sheet-content {
+    transform: translateY(0) !important;
+}
+
 .sheet-content { 
     position: absolute; 
     left: 0; 
