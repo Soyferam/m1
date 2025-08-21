@@ -403,6 +403,13 @@ function initSettingsButton() {
                 b.style.right = '0';
                 b.style.width = '100%';
             } catch(_) {}
+            // Показать Telegram Back Button и дублирующую локальную кнопку
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                tg?.BackButton?.show?.();
+            } catch(_) {}
+            const backBtn = sheet.querySelector('.sheet-back-btn');
+            if (backBtn) backBtn.style.display = '';
         }
         try {
             const tg = window.Telegram && window.Telegram.WebApp;
@@ -1006,6 +1013,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const overlay = document.getElementById('settings-modal');
         if (!overlay) return;
         const content = overlay.querySelector('.sheet-content');
+        const backBtn = overlay.querySelector('.sheet-back-btn');
         const close = () => {
             overlay.style.display = 'none';
             // Unlock background scroll and restore position
@@ -1019,6 +1027,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 b.style.width = '';
                 window.scrollTo(0, y);
             } catch(_) {}
+            try {
+                const tg = window.Telegram && window.Telegram.WebApp;
+                tg?.BackButton?.hide?.();
+            } catch(_) {}
         };
         // Закрытие по клику вне
         overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
@@ -1030,6 +1042,14 @@ document.addEventListener('DOMContentLoaded', function() {
         content.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
         content.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) content.style.transform = `translateY(${dy}px)`; }, { passive: true });
         content.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) close(); content.style.transform = ''; }, { passive: true });
+        // Telegram Back Button
+        try {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            if (tg && tg.BackButton) {
+                tg.BackButton.onClick(close);
+            }
+        } catch(_) {}
+        if (backBtn) backBtn.addEventListener('click', close);
         // Языки
         content.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
             const lang = btn.getAttribute('data-lang');
