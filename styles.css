@@ -1735,6 +1735,26 @@ input, textarea {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Защита от закрытия модального окна для элементов с data-no-close */
+[data-no-close="true"] {
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
+}
+
+[data-no-close="true"] * {
+    pointer-events: auto;
+}
+
+/* Обеспечиваем, что overlay (фон) модального окна имеет правильный z-index */
+.sheet-overlay {
+    z-index: 1000;
+}
+
+.sheet-overlay .sheet-content {
+    z-index: 1001;
+}
+
 .character-edit-content .sheet-header {
     display: flex;
     align-items: center;
@@ -2273,3 +2293,33 @@ input, textarea {
 }
 
 /* Убираем специфические стили - свечение по бокам карусели полностью отключено */
+
+/* Стили для граббера модального окна */
+.sheet-grabber {
+    width: 40px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    margin: 12px auto;
+    cursor: grab;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1002;
+}
+
+.sheet-grabber:hover {
+    background: rgba(255, 255, 255, 0.5);
+    transform: scaleX(1.2);
+}
+
+.sheet-grabber:active {
+    cursor: grabbing;
+    background: rgba(255, 255, 255, 0.7);
+    transform: scaleX(1.1);
+}
+
+/* Анимация для граббера при свайпе */
+.sheet-grabber.swiping {
+    background: rgba(0, 212, 255, 0.6);
+    transform: scaleX(1.3);
+}
