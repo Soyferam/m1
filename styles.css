@@ -1727,16 +1727,12 @@ input, textarea {
 
 /* Character Edit Modal Styles */
 .character-edit-content {
-    max-height: 90vh;
-    min-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
     background: rgba(14, 15, 18, 0.95);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    /* Обеспечиваем, что кнопка "Принять" всегда видна */
-    display: flex;
-    flex-direction: column;
 }
 
 .character-edit-content .sheet-header {
@@ -2008,9 +2004,7 @@ input, textarea {
     padding: 24px 0 16px;
     display: flex;
     justify-content: center;
-    margin-top: auto;
-    /* Обеспечиваем, что кнопка всегда внизу */
-    flex-shrink: 0;
+    margin-top: 20px;
 }
 
 .accept-btn {
@@ -2027,8 +2021,6 @@ input, textarea {
     position: relative;
     overflow: hidden;
     font-family: var(--font-family);
-    /* Обеспечиваем, что кнопка не закрывает модал */
-    z-index: 10;
 }
 
 .accept-btn::before {
@@ -2073,8 +2065,7 @@ input, textarea {
 /* Mobile Responsiveness */
 @media (max-width: 480px) {
     .character-edit-content {
-        max-height: 95vh;
-        min-height: 85vh;
+        max-height: 90vh;
         padding: 16px;
     }
     
@@ -2126,8 +2117,7 @@ input, textarea {
     /* Уменьшаем отступы для мобильных */
     .edit-actions {
         padding: 20px 0 12px;
-        margin-top: auto;
-        flex-shrink: 0;
+        margin-top: 16px;
     }
     
     /* Убеждаемся, что свечение одинаковое на мобильных для всех секций */

@@ -1330,30 +1330,19 @@ function initCharacterEditModal() {
     const acceptBtn = modal.querySelector('.accept-btn');
     const editItems = modal.querySelectorAll('.edit-item');
 
-    // Close modal handlers - исправляем логику закрытия
+    // Close modal handlers - возвращаем как было
     modal.addEventListener('click', (e) => {
         // Закрываем модальное окно только при клике на overlay (фон), а не на его содержимое
-        if (e.target === modal) {
+        if (e.target === modal && !e.target.closest('.character-edit-content')) {
             closeCharacterEditModal();
         }
+        
+        // Дополнительная защита - не закрываем модал при клике на элементы с data-no-close
+        if (e.target.closest('[data-no-close="true"]')) {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        }
     });
-    
-    // Дополнительная защита - предотвращаем закрытие при клике на любой контент
-    const modalContent = modal.querySelector('.character-edit-content');
-    if (modalContent) {
-        modalContent.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-        
-        // Дополнительная защита для всех элементов внутри модала
-        modalContent.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-        });
-        
-        modalContent.addEventListener('touchstart', (e) => {
-            e.stopPropagation();
-        });
-    }
 
     // Back button handler
     if (backBtn) {
@@ -1378,15 +1367,6 @@ function initCharacterEditModal() {
 
     // Reset button handler
     if (resetBtn) {
-        // Дополнительная защита - предотвращаем всплытие события
-        resetBtn.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-        });
-        
-        resetBtn.addEventListener('touchstart', (e) => {
-            e.stopPropagation();
-        });
-        
         resetBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1406,23 +1386,21 @@ function initCharacterEditModal() {
                 else if (navigator.vibrate) navigator.vibrate(20);
             } catch(_) {}
         });
+        
+        // Дополнительная защита - предотвращаем всплытие события
+        resetBtn.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
+        
+        resetBtn.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+        });
     }
 
     // Accept button handler
     if (acceptBtn) {
-        // Дополнительная защита - предотвращаем всплытие события
-        acceptBtn.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-        });
-        
-        acceptBtn.addEventListener('touchstart', (e) => {
-            e.stopPropagation();
-        });
-        
         acceptBtn.addEventListener('click', (e) => {
-            e.preventDefault();
             e.stopPropagation();
-            e.stopImmediatePropagation();
             
             const selectedItems = modal.querySelectorAll('.edit-item.selected');
             if (selectedItems.length === 0) {
@@ -1441,11 +1419,7 @@ function initCharacterEditModal() {
             
             console.log('Applied selections:', selections);
             showNotification('Изменения применены');
-            
-            // Закрываем модал после применения изменений
-            setTimeout(() => {
-                closeCharacterEditModal();
-            }, 100);
+            closeCharacterEditModal();
             
             try {
                 const tg = window.Telegram && window.Telegram.WebApp;
