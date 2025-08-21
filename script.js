@@ -509,19 +509,19 @@ function initSettingsButton() {
     }, { passive: false });
     // Свайп вниз для закрытия
     let startY = 0, dy = 0, dragging = false;
-    sheet.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
-    sheet.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) content.style.transform = `translateY(${dy}px)`; }, { passive: true });
-    sheet.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) closeSettingsModal(); content.style.transform = ''; }, { passive: true });
+    content.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
+    content.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) content.style.transform = `translateY(${dy}px)`; }, { passive: true });
+    content.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) close(); content.style.transform = ''; }, { passive: true });
     // Telegram Back Button
     try {
         const tg = window.Telegram && window.Telegram.WebApp;
         if (tg && tg.BackButton) {
-            tg.BackButton.onClick(closeSettingsModal);
+            tg.BackButton.onClick(close);
         }
     } catch(_) {}
-    // Убираем ссылку на несуществующую backBtn
+    if (backBtn) backBtn.addEventListener('click', close);
     // Языки
-    sheet.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
+    content.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
         const lang = btn.getAttribute('data-lang');
         showNotification(`Язык: ${lang}`);
     }));
@@ -1519,7 +1519,6 @@ function initCharacterEditModal() {
         if (target.closest('.sheet-grabber') || target.closest('.sheet-header')) {
             startY = e.touches[0].clientY;
             isSwipeDown = true;
-            console.log('Swipe started on grabber/header');
         } else {
             isSwipeDown = false;
         }
@@ -1540,7 +1539,6 @@ function initCharacterEditModal() {
         if (!isSwipeDown) return;
         
         const diff = currentY - startY;
-        console.log('Swipe ended, diff:', diff);
         
         if (diff > 100) { // Swipe down threshold
             closeCharacterEditModal();
@@ -1561,7 +1559,6 @@ function initCharacterEditModal() {
         grabber.addEventListener('mousedown', (e) => {
             isMouseDown = true;
             mouseStartY = e.clientY;
-            console.log('Mouse down on grabber');
             e.preventDefault();
         });
 
@@ -1580,7 +1577,6 @@ function initCharacterEditModal() {
             if (!isMouseDown) return;
             
             const diff = mouseCurrentY - mouseStartY;
-            console.log('Mouse up on grabber, diff:', diff);
             
             if (diff > 100) {
                 closeCharacterEditModal();
