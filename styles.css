@@ -2273,3 +2273,193 @@ input, textarea {
 }
 
 /* Убираем специфические стили - свечение по бокам карусели полностью отключено */
+
+/* Modal Animation */
+.sheet-overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+}
+
+.sheet-overlay.show {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.sheet-overlay.show {
+    opacity: 1;
+}
+
+.sheet-content {
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.sheet-overlay.show .sheet-content {
+    transform: translateY(0);
+}
+
+/* Character Edit Modal Specific Styles */
+#character-edit-modal {
+    z-index: 1300 !important;
+}
+
+#character-edit-modal .character-edit-content {
+    z-index: 1301 !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    display: block !important;
+    background: #0e0f12 !important;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    padding: 12px 16px 20px !important;
+    max-height: 80vh !important;
+    overflow: auto !important;
+}
+
+#character-edit-modal[style*="display: block"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#character-edit-modal[style*="display: block"] .character-edit-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+/* Prevent modal from closing when clicking on content */
+#character-edit-modal .character-edit-content {
+    pointer-events: auto !important;
+}
+
+#character-edit-modal .character-edit-content * {
+    pointer-events: auto !important;
+}
+
+/* Edit sections and items */
+.edit-section {
+    margin: 20px 0;
+}
+
+.edit-subtitle {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #fff;
+    text-align: center;
+}
+
+.items-carousel {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.carousel-container {
+    position: relative;
+    width: 100%;
+}
+
+.carousel-track {
+    display: flex;
+    gap: 12px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0 16px;
+}
+
+.edit-item {
+    flex: 0 0 auto;
+    width: 100px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 12px;
+    padding: 12px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid transparent;
+}
+
+.edit-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.edit-item.selected {
+    background: rgba(0, 212, 255, 0.15);
+    border-color: rgba(0, 212, 255, 0.6);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.15), 0 0 0 2px rgba(0, 212, 255, 0.2);
+    animation: selectedPulse 2s ease-in-out infinite;
+}
+
+.edit-item img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.edit-item .item-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+    display: block;
+}
+
+/* Edit actions */
+.edit-actions {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.accept-btn {
+    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+    color: #fff;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.accept-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 212, 255, 0.4);
+}
+
+.accept-btn:active {
+    transform: translateY(0);
+}
+
+/* Reset button */
+.reset-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.reset-btn:active {
+    transform: scale(0.95);
+}

@@ -1330,17 +1330,11 @@ function initCharacterEditModal() {
     const acceptBtn = modal.querySelector('.accept-btn');
     const editItems = modal.querySelectorAll('.edit-item');
 
-    // Close modal handlers - возвращаем как было
+    // Close modal handlers - исправляем логику закрытия
     modal.addEventListener('click', (e) => {
-        // Закрываем модальное окно только при клике на overlay (фон), а не на его содержимое
-        if (e.target === modal && !e.target.closest('.character-edit-content')) {
+        // Закрываем модальное окно ТОЛЬКО при клике на overlay (фон), а не на его содержимое
+        if (e.target === modal) {
             closeCharacterEditModal();
-        }
-        
-        // Дополнительная защита - не закрываем модал при клике на элементы с data-no-close
-        if (e.target.closest('[data-no-close="true"]')) {
-            e.stopPropagation();
-            e.stopImmediatePropagation();
         }
     });
 
@@ -1349,33 +1343,11 @@ function initCharacterEditModal() {
         backBtn.addEventListener('click', closeCharacterEditModal);
     }
     
-    // Prevent modal from closing when clicking on header content
-    const header = modal.querySelector('.sheet-header');
-    if (header) {
-        header.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-    }
-    
-    // Prevent modal from closing when clicking on section headers
-    const sectionHeaders = modal.querySelectorAll('.edit-subtitle');
-    sectionHeaders.forEach(header => {
-        header.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-    });
-
     // Reset button handler
     if (resetBtn) {
         resetBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            e.stopImmediatePropagation();
-            
-            // Дополнительная защита от всплытия события
-            setTimeout(() => {
-                e.stopImmediatePropagation();
-            }, 0);
             
             // Remove all selections
             editItems.forEach(item => item.classList.remove('selected'));
@@ -1386,20 +1358,12 @@ function initCharacterEditModal() {
                 else if (navigator.vibrate) navigator.vibrate(20);
             } catch(_) {}
         });
-        
-        // Дополнительная защита - предотвращаем всплытие события
-        resetBtn.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-        });
-        
-        resetBtn.addEventListener('touchstart', (e) => {
-            e.stopPropagation();
-        });
     }
 
     // Accept button handler
     if (acceptBtn) {
         acceptBtn.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
             
             const selectedItems = modal.querySelectorAll('.edit-item.selected');
@@ -1434,12 +1398,6 @@ function initCharacterEditModal() {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            e.stopImmediatePropagation();
-            
-            // Дополнительная защита от всплытия события
-            setTimeout(() => {
-                e.stopImmediatePropagation();
-            }, 0);
             
             const type = item.getAttribute('data-type');
             
@@ -1462,11 +1420,6 @@ function initCharacterEditModal() {
     // Touch/swipe support for carousels - исправляем логику свайпов
     const carouselElements = modal.querySelectorAll('.items-carousel');
     carouselElements.forEach(carousel => {
-        // Prevent modal from closing when clicking on carousel
-        carousel.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
-        
         const track = carousel.querySelector('.carousel-track');
         let startX = 0;
         let currentX = 0;
@@ -1555,15 +1508,25 @@ function initCharacterEditModal() {
         }, { passive: true });
     });
 
-    // Swipe to close (like settings modal)
+    // Swipe to close (like settings modal) - исправляем логику свайпа
     let startY = 0;
     let currentY = 0;
+    let isSwipeDown = false;
 
     modal.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
+        // Начинаем отслеживание свайпа только если касание началось на граббере или заголовке
+        const target = e.target;
+        if (target.closest('.sheet-grabber') || target.closest('.sheet-header')) {
+            startY = e.touches[0].clientY;
+            isSwipeDown = true;
+        } else {
+            isSwipeDown = false;
+        }
     }, { passive: true });
 
     modal.addEventListener('touchmove', (e) => {
+        if (!isSwipeDown) return;
+        
         currentY = e.touches[0].clientY;
         const diff = currentY - startY;
         
@@ -1573,6 +1536,8 @@ function initCharacterEditModal() {
     }, { passive: true });
 
     modal.addEventListener('touchend', () => {
+        if (!isSwipeDown) return;
+        
         const diff = currentY - startY;
         
         if (diff > 100) { // Swipe down threshold
@@ -1580,6 +1545,8 @@ function initCharacterEditModal() {
         } else {
             content.style.transform = 'translateY(0)';
         }
+        
+        isSwipeDown = false;
     }, { passive: true });
 
     // Telegram Back Button handler
@@ -2047,7 +2014,7 @@ async function init3DCoin() {
             // Даже при ошибке скрываем экран загрузки - ВРЕМЕННО ОТКЛЮЧЕНО
             // updateLoadingProgress(4, 'Готово!');
             // setTimeout(() => {
-            //     hideLoadingScreen();
+            //     hideLoadingProgress();
             // }, 500);
         });
 
