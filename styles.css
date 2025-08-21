@@ -1827,49 +1827,13 @@ input, textarea {
 .items-carousel {
     display: flex;
     align-items: center;
-    gap: 12px;
     position: relative;
+    width: 100%;
 }
 
+/* Скрываем стрелочки */
 .carousel-arrow {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    flex-shrink: 0;
-}
-
-.carousel-arrow:hover,
-.carousel-arrow:active {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: scale(0.95) translateZ(0);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-}
-
-.carousel-arrow:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.carousel-arrow:disabled:hover,
-.carousel-arrow:disabled:active {
-    transform: none;
-    box-shadow: none;
-}
-
-.carousel-arrow img {
-    width: 20px;
-    height: 20px;
-    filter: brightness(0) invert(1);
+    display: none !important;
 }
 
 .carousel-container {
@@ -1884,13 +1848,18 @@ input, textarea {
     -webkit-overflow-scrolling: touch;
     /* Ensure proper sizing */
     min-width: 0;
-    /* Add scroll indicator */
+    /* Add scroll indicator with blue glow */
     background: linear-gradient(90deg, 
-        rgba(0, 212, 255, 0.1) 0%, 
+        rgba(0, 212, 255, 0.15) 0%, 
         transparent 20%, 
         transparent 80%, 
-        rgba(0, 212, 255, 0.1) 100%);
+        rgba(0, 212, 255, 0.15) 100%);
     border-radius: 8px;
+    width: 100%;
+    /* Добавляем отступы для лучшего отображения градиентов */
+    padding: 4px 0;
+    /* Убираем overflow для лучшего контроля */
+    overflow: hidden;
 }
 
 .carousel-track {
@@ -1910,6 +1879,11 @@ input, textarea {
     /* Ensure track can expand to show all items */
     width: max-content;
     min-width: 100%;
+    /* Добавляем отступы по бокам для лучшего отображения */
+    padding-left: 8px;
+    padding-right: 8px;
+    /* Убираем transition по умолчанию для лучшего контроля */
+    transition: none;
 }
 
 .edit-item {
@@ -1932,6 +1906,8 @@ input, textarea {
     /* Ensure proper rendering */
     will-change: transform;
     transform: translateZ(0);
+    /* Добавляем синее свечение по бокам для всех карточек */
+    box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.1);
 }
 
 .edit-item::before {
@@ -1954,7 +1930,7 @@ input, textarea {
 
 .edit-item:hover {
     transform: translateY(-4px) translateZ(0);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(0, 212, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.2);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1962,7 +1938,7 @@ input, textarea {
 .edit-item.selected {
     border-color: #00d4ff;
     background: rgba(0, 212, 255, 0.1);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 0 2px rgba(0, 212, 255, 0.4);
     transform: scale(1.05) translateZ(0);
     animation: selectedPulse 2s ease-in-out infinite;
     position: relative;
@@ -2028,6 +2004,7 @@ input, textarea {
     padding: 24px 0 16px;
     display: flex;
     justify-content: center;
+    margin-top: 20px;
 }
 
 .accept-btn {
@@ -2043,6 +2020,7 @@ input, textarea {
     box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
     position: relative;
     overflow: hidden;
+    font-family: var(--font-family);
 }
 
 .accept-btn::before {
@@ -2073,6 +2051,11 @@ input, textarea {
     transform: translateY(-2px) translateZ(0);
 }
 
+.accept-btn {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
 /* Liquid Glass Effect for Edit Items */
 .edit-item {
     backdrop-filter: blur(10px);
@@ -2098,19 +2081,11 @@ input, textarea {
         height: 56px;
     }
     
-    .carousel-arrow {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .carousel-arrow img {
-        width: 18px;
-        height: 18px;
-    }
-    
     .accept-btn {
         padding: 14px 40px;
         font-size: 15px;
+        width: 100%;
+        max-width: 280px;
     }
     
     .reset-btn {
@@ -2120,20 +2095,34 @@ input, textarea {
     
     .carousel-track {
         gap: 12px;
+        padding-left: 6px;
+        padding-right: 6px;
     }
     
     .carousel-container {
         background: linear-gradient(90deg, 
-            rgba(0, 212, 255, 0.05) 0%, 
+            rgba(0, 212, 255, 0.1) 0%, 
             transparent 15%, 
             transparent 85%, 
-            rgba(0, 212, 255, 0.05) 100%);
+            rgba(0, 212, 255, 0.1) 100%);
+        padding: 2px 0;
     }
-}
-
-.accept-btn {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    
+    /* Убираем gap у карусели на мобильных */
+    .items-carousel {
+        gap: 0;
+    }
+    
+    /* Убираем transition по умолчанию для мобильных */
+    .carousel-track {
+        transition: none;
+    }
+    
+    /* Уменьшаем отступы для мобильных */
+    .edit-actions {
+        padding: 20px 0 12px;
+        margin-top: 16px;
+    }
 }
 
 /* Modal Animation */
@@ -2195,7 +2184,8 @@ input, textarea {
     }
 }
 
-/* Loading Screen */
+/* Loading Screen - ВРЕМЕННО ОТКЛЮЧЕНО */
+/*
 .loading-screen {
     position: fixed;
     top: 0;
@@ -2232,34 +2222,11 @@ input, textarea {
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
 
-.loading-spinner {
-    margin-bottom: 20px;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top: 3px solid #1343DE;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 .loading-text {
     font-size: 18px;
     font-weight: 500;
     margin-bottom: 20px;
     color: rgba(255, 255, 255, 0.9);
-}
-
-.loading-progress {
-    margin-top: 20px;
 }
 
 .progress-bar {
@@ -2283,13 +2250,10 @@ input, textarea {
     font-size: 14px;
     color: rgba(255, 255, 255, 0.7);
 }
+*/
 
-/* Hide app container initially */
+/* App container теперь видимый сразу */
 .app-container {
-    opacity: 0;
-    transition: opacity 0.5s ease-in;
-}
-
-.app-container.loaded {
     opacity: 1;
+    transition: opacity 0.5s ease-in;
 }

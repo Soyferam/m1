@@ -1,7 +1,8 @@
 // Telegram Web App initialization
 let tg = null;
 
-// Loading screen management
+// Loading screen management - ВРЕМЕННО ОТКЛЮЧЕНО
+/*
 let loadingProgress = 0;
 let loadingSteps = [
     { name: 'Инициализация...', progress: 10 },
@@ -44,6 +45,7 @@ function hideLoadingScreen() {
         }, 500);
     }
 }
+*/
 
 // Initialize Telegram Web App
 function initTelegramApp() {
@@ -497,81 +499,40 @@ function initSettingsButton() {
     });
     
     // Закрытие по клику вне модального окна
-    sheet.addEventListener('click', (e) => {
-        if (e.target === sheet) {
-            closeSettingsModal();
-        }
-    });
-    
-    // Закрытие по Telegram Back Button
-    try {
-        const tg = window.Telegram && window.Telegram.WebApp;
-        if (tg && tg.BackButton) {
-            tg.BackButton.onClick(closeSettingsModal);
-        }
-    } catch(_) {}
-    
-    // Блокируем скролл на модальном окне
+    sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSettingsModal(); });
+    // Блокируем скролл на оверлее
     sheet.addEventListener('touchmove', (e) => { 
         if (e.cancelable) e.preventDefault(); 
     }, { passive: false });
     sheet.addEventListener('wheel', (e) => { 
         e.preventDefault(); 
     }, { passive: false });
-    
-    // Инициализация кнопок выбора языка
-    const langOptions = sheet.querySelectorAll('.lang-option');
-    langOptions.forEach(option => {
-        option.addEventListener('click', () => {
-            const lang = option.getAttribute('data-lang');
-            
-            // Убираем активный класс со всех кнопок
-            langOptions.forEach(opt => opt.classList.remove('active'));
-            
-            // Добавляем активный класс к выбранной кнопке
-            option.classList.add('active');
-            
-            // Haptic feedback
-            try {
-                const tg = window.Telegram && window.Telegram.WebApp;
-                if (tg && tg.HapticFeedback?.selectionChanged) tg.HapticFeedback.selectionChanged();
-                else if (navigator.vibrate) navigator.vibrate(10);
-            } catch(_) {}
-            
-            // Показываем уведомление
-            showNotification(`Язык изменен на ${option.querySelector('span').textContent}`);
-        });
+    // Свайп вниз для закрытия
+    let startY = 0, dy = 0, dragging = false;
+    sheet.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
+    sheet.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }, { passive: true });
+    sheet.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) closeSettingsModal(); sheet.style.transform = ''; }, { passive: true });
+    // Telegram Back Button
+    try {
+        const tg = window.Telegram && window.Telegram.WebApp;
+        if (tg && tg.BackButton) {
+            tg.BackButton.onClick(closeSettingsModal);
+        }
+    } catch(_) {}
+    // Убираем ссылку на несуществующую backBtn
+    // Языки
+    sheet.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
+        const lang = btn.getAttribute('data-lang');
+        showNotification(`Язык: ${lang}`);
+    }));
+    // Поддержка
+    const sup = document.getElementById('support-btn');
+    sup?.addEventListener('click', () => {
+        try {
+            const tg = window.Telegram && window.Telegram.WebApp;
+            tg?.openTelegramLink?.('https://t.me/your_support_here');
+        } catch(_) {}
     });
-    
-    // Устанавливаем русский язык как активный по умолчанию
-    const ruOption = sheet.querySelector('.lang-option[data-lang="ru"]');
-    if (ruOption) {
-        ruOption.classList.add('active');
-    }
-    
-    // Инициализация кнопки поддержки
-    const supportBtn = sheet.querySelector('.support-btn');
-    if (supportBtn) {
-        supportBtn.addEventListener('click', () => {
-            // Haptic feedback
-            try {
-                const tg = window.Telegram && window.Telegram.WebApp;
-                if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('medium');
-                else if (navigator.vibrate) navigator.vibrate(20);
-            } catch(_) {}
-            
-            // Показываем уведомление
-            showNotification('Открываем чат поддержки...');
-            
-            // Можно добавить открытие Telegram чата
-            try {
-                const tg = window.Telegram && window.Telegram.WebApp;
-                if (tg && tg.openTelegramLink) {
-                    tg.openTelegramLink('https://t.me/zmeifi_support');
-                }
-            } catch(_) {}
-        });
-    }
 }
 
 // Swap wallet media to smaller versions when available
@@ -1107,8 +1068,8 @@ async function initTelegramSDKFullscreen() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing app...');
     
-    // Начинаем с экрана загрузки
-    updateLoadingProgress(0, 'Инициализация...');
+    // Начинаем с экрана загрузки - ОТКЛЮЧЕНО
+    // updateLoadingProgress(0, 'Инициализация...');
     
     // Пытаемся открыть мини‑апп в полноэкранном режиме как можно раньше
     initTelegramSDKFullscreen();
@@ -1143,8 +1104,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize snake animation
     initSnakeAnimation();
     
-    // Обновляем прогресс после инициализации основных компонентов
-    updateLoadingProgress(1, 'Загрузка ресурсов...');
+    // Обновляем прогресс после инициализации основных компонентов - ОТКЛЮЧЕНО
+    // updateLoadingProgress(1, 'Загрузка ресурсов...');
     
     // Инициализируем 3D монетку с небольшой задержкой для плавности
     setTimeout(() => {
@@ -1368,11 +1329,11 @@ function initCharacterEditModal() {
     const resetBtn = modal.querySelector('.reset-btn');
     const acceptBtn = modal.querySelector('.accept-btn');
     const editItems = modal.querySelectorAll('.edit-item');
-    const carouselArrows = modal.querySelectorAll('.carousel-arrow');
 
     // Close modal handlers
     modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
+        // Закрываем модальное окно только при клике на overlay, а не на его содержимое
+        if (e.target === modal && !e.target.closest('.character-edit-content')) {
             closeCharacterEditModal();
         }
     });
@@ -1426,9 +1387,12 @@ function initCharacterEditModal() {
         });
     }
 
-    // Edit item selection
+    // Edit item selection - исправляем логику выбора
     editItems.forEach(item => {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
             const type = item.getAttribute('data-type');
             
             // Remove selection from other items of the same type
@@ -1439,40 +1403,10 @@ function initCharacterEditModal() {
             // Toggle selection for clicked item
             item.classList.toggle('selected');
             
-            try {
-                const tg = window.Telegram && window.Telegram.WebApp;
-                if (tg && tg.HapticFeedback?.impactOccurred) tg.HapticFeedback.impactOccurred('light');
-                else if (navigator.vibrate) navigator.vibrate(10);
-            } catch(_) {}
-        });
-    });
-
-    // Carousel functionality
-    carouselArrows.forEach(arrow => {
-        arrow.addEventListener('click', () => {
-            const carousel = arrow.closest('.items-carousel');
-            const track = carousel.querySelector('.carousel-track');
-            const isLeft = arrow.classList.contains('carousel-left');
-            
-            const scrollAmount = 140; // Width of item + gap
-            const currentTransform = getComputedStyle(track).transform;
-            const matrix = new DOMMatrix(currentTransform);
-            const currentX = matrix.m41;
-            
-            let newX;
-            if (isLeft) {
-                // Move left - show previous items
-                newX = Math.min(0, currentX + scrollAmount);
-            } else {
-                // Move right - show next items
-                const maxScroll = -(track.scrollWidth - carousel.offsetWidth);
-                newX = Math.max(maxScroll, currentX - scrollAmount);
-            }
-            
-            track.style.transform = `translateX(${newX}px)`;
-            
-            // Update arrow states
-            updateCarouselArrows(carousel);
+            // Предотвращаем всплытие события, чтобы модальное окно не закрывалось
+            setTimeout(() => {
+                e.stopImmediatePropagation();
+            }, 0);
             
             try {
                 const tg = window.Telegram && window.Telegram.WebApp;
@@ -1482,41 +1416,23 @@ function initCharacterEditModal() {
         });
     });
 
-    // Function to update carousel arrow states
-    function updateCarouselArrows(carousel) {
-        const track = carousel.querySelector('.carousel-track');
-        const leftArrow = carousel.querySelector('.carousel-left');
-        const rightArrow = carousel.querySelector('.carousel-right');
-        
-        const currentTransform = getComputedStyle(track).transform;
-        const matrix = new DOMMatrix(currentTransform);
-        const currentX = matrix.m41;
-        
-        // Enable/disable left arrow
-        if (leftArrow) {
-            leftArrow.disabled = currentX >= 0;
-            leftArrow.style.opacity = currentX >= 0 ? '0.5' : '1';
-        }
-        
-        // Enable/disable right arrow
-        if (rightArrow) {
-            const maxScroll = -(track.scrollWidth - carousel.offsetWidth);
-            rightArrow.disabled = currentX <= maxScroll;
-            rightArrow.style.opacity = currentX <= maxScroll ? '0.5' : '1';
-        }
-    }
-
-    // Touch/swipe support for carousels
+    // Touch/swipe support for carousels - исправляем логику свайпов
     const carouselElements = modal.querySelectorAll('.items-carousel');
     carouselElements.forEach(carousel => {
         const track = carousel.querySelector('.carousel-track');
         let startX = 0;
         let currentX = 0;
         let isDragging = false;
+        let startTransform = 0;
 
         carousel.addEventListener('touchstart', (e) => {
             startX = e.touches[0].clientX;
             isDragging = true;
+            
+            // Получаем текущую позицию трека
+            const currentTransform = getComputedStyle(track).transform;
+            const matrix = new DOMMatrix(currentTransform);
+            startTransform = matrix.m41;
         }, { passive: true });
 
         carousel.addEventListener('touchmove', (e) => {
@@ -1525,10 +1441,11 @@ function initCharacterEditModal() {
             const diff = startX - currentX;
             
             // Move track with finger
-            const currentTransform = getComputedStyle(track).transform;
-            const matrix = new DOMMatrix(currentTransform);
-            const currentTrackX = matrix.m41;
-            track.style.transform = `translateX(${currentTrackX - diff}px)`;
+            const newTransform = startTransform - diff;
+            track.style.transform = `translateX(${newTransform}px)`;
+            
+            // Убираем transition во время перетаскивания для плавности
+            track.style.transition = 'none';
         }, { passive: true });
 
         carousel.addEventListener('touchend', () => {
@@ -1538,9 +1455,12 @@ function initCharacterEditModal() {
             const diff = startX - currentX;
             const threshold = 50; // Minimum swipe distance
             
+            // Определяем размер прокрутки в зависимости от устройства
+            const isMobile = window.innerWidth <= 480;
+            const scrollAmount = isMobile ? 112 : 136; // 100px + 12px gap для мобильных, 120px + 16px для десктопа
+            
             if (Math.abs(diff) > threshold) {
                 // Snap to next/previous item
-                const scrollAmount = 140;
                 const currentTransform = getComputedStyle(track).transform;
                 const matrix = new DOMMatrix(currentTransform);
                 const currentTrackX = matrix.m41;
@@ -1548,28 +1468,42 @@ function initCharacterEditModal() {
                 let targetX;
                 if (diff > 0) {
                     // Swipe left - go to next item
-                    targetX = Math.max(-(track.scrollWidth - carousel.offsetWidth), currentTrackX - scrollAmount);
+                    const maxScroll = -(track.scrollWidth - carousel.offsetWidth);
+                    targetX = Math.max(maxScroll, currentTrackX - scrollAmount);
                 } else {
                     // Swipe right - go to previous item
                     targetX = Math.min(0, currentTrackX + scrollAmount);
                 }
                 
+                // Плавная анимация к целевой позиции
+                track.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
                 track.style.transform = `translateX(${targetX}px)`;
+                
+                // Убираем transition после анимации
+                setTimeout(() => {
+                    track.style.transition = '';
+                }, 300);
             } else {
                 // Snap back to current position
                 const currentTransform = getComputedStyle(track).transform;
                 const matrix = new DOMMatrix(currentTransform);
                 const currentTrackX = matrix.m41;
-                const scrollAmount = 140;
-                const targetX = Math.round(currentTrackX / scrollAmount) * scrollAmount;
+                
+                // Округляем до ближайшего элемента с учетом отступов
+                const adjustedScrollAmount = scrollAmount;
+                const targetX = Math.round(currentTrackX / adjustedScrollAmount) * adjustedScrollAmount;
                 
                 // Ensure we don't go beyond bounds
-                targetX = Math.max(-(track.scrollWidth - carousel.offsetWidth), Math.min(0, targetX));
-                track.style.transform = `translateX(${targetX}px)`;
+                const maxScroll = -(track.scrollWidth - carousel.offsetWidth);
+                const finalTargetX = Math.max(maxScroll, Math.min(0, targetX));
+                
+                track.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                track.style.transform = `translateX(${finalTargetX}px)`;
+                
+                setTimeout(() => {
+                    track.style.transition = '';
+                }, 300);
             }
-            
-            // Update arrow states after swipe
-            updateCarouselArrows(carousel);
         }, { passive: true });
     });
 
@@ -1611,12 +1545,6 @@ function initCharacterEditModal() {
     // Block scroll on modal
     modal.addEventListener('touchmove', (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
     modal.addEventListener('wheel', (e) => { e.preventDefault(); }, { passive: false });
-
-    // Initialize carousel arrow states
-    const carouselInitElements = modal.querySelectorAll('.items-carousel');
-    carouselInitElements.forEach(carousel => {
-        updateCarouselArrows(carousel);
-    });
 }
 
 // Snake Animation
@@ -1909,8 +1837,8 @@ async function init3DCoin() {
     if (!stage) return;
     if (coinInitDone && stage.children.length) return; // уже инициализировано
     
-    // Обновляем прогресс загрузки
-    updateLoadingProgress(2, 'Подготовка 3D модели...');
+    // Обновляем прогресс загрузки - ОТКЛЮЧЕНО
+    // updateLoadingProgress(2, 'Подготовка 3D модели...');
 
     const showImage = (srcs = []) => {
         stage.innerHTML = '';
