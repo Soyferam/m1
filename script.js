@@ -447,9 +447,6 @@ function initSettingsButton() {
     const sheet = document.getElementById('settings-modal');
     if (!sheet) return;
     
-    const content = sheet.querySelector('.sheet-content');
-    if (!content) return;
-    
     // Функция закрытия модального окна
     const closeSettingsModal = () => {
         sheet.style.display = 'none';
@@ -512,9 +509,9 @@ function initSettingsButton() {
     }, { passive: false });
     // Свайп вниз для закрытия
     let startY = 0, dy = 0, dragging = false;
-    content.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
-    content.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) content.style.transform = `translateY(${dy}px)`; }, { passive: true });
-    content.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) closeSettingsModal(); content.style.transform = ''; }, { passive: true });
+    sheet.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
+    sheet.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }, { passive: true });
+    sheet.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) closeSettingsModal(); sheet.style.transform = ''; }, { passive: true });
     // Telegram Back Button
     try {
         const tg = window.Telegram && window.Telegram.WebApp;
@@ -522,9 +519,9 @@ function initSettingsButton() {
             tg.BackButton.onClick(closeSettingsModal);
         }
     } catch(_) {}
-    
+    // Убираем ссылку на несуществующую backBtn
     // Языки
-    content.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
+    sheet.querySelectorAll('.lang-option').forEach(btn => btn.addEventListener('click', () => {
         const lang = btn.getAttribute('data-lang');
         showNotification(`Язык: ${lang}`);
     }));
@@ -1265,14 +1262,6 @@ function openCharacterEditModal() {
     const modal = document.getElementById('character-edit-modal');
     if (!modal) return;
 
-    const content = modal.querySelector('.character-edit-content');
-    if (content) {
-        // Сбрасываем предыдущие состояния
-        content.style.transform = '';
-        content.style.opacity = '';
-        content.style.transition = '';
-    }
-
     modal.style.display = 'block';
     
     // Lock background scroll
@@ -1341,11 +1330,17 @@ function initCharacterEditModal() {
     const acceptBtn = modal.querySelector('.accept-btn');
     const editItems = modal.querySelectorAll('.edit-item');
 
-    // Close modal handlers - исправляем логику закрытия
+    // Close modal handlers - возвращаем как было
     modal.addEventListener('click', (e) => {
-        // Закрываем модальное окно ТОЛЬКО при клике на overlay (фон), а не на его содержимое
-        if (e.target === modal) {
+        // Закрываем модальное окно только при клике на overlay (фон), а не на его содержимое
+        if (e.target === modal && !e.target.closest('.character-edit-content')) {
             closeCharacterEditModal();
+        }
+        
+        // Дополнительная защита - не закрываем модал при клике на элементы с data-no-close
+        if (e.target.closest('[data-no-close="true"]')) {
+            e.stopPropagation();
+            e.stopImmediatePropagation();
         }
     });
 
@@ -1354,11 +1349,33 @@ function initCharacterEditModal() {
         backBtn.addEventListener('click', closeCharacterEditModal);
     }
     
+    // Prevent modal from closing when clicking on header content
+    const header = modal.querySelector('.sheet-header');
+    if (header) {
+        header.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+    
+    // Prevent modal from closing when clicking on section headers
+    const sectionHeaders = modal.querySelectorAll('.edit-subtitle');
+    sectionHeaders.forEach(header => {
+        header.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
+
     // Reset button handler
     if (resetBtn) {
         resetBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Дополнительная защита от всплытия события
+            setTimeout(() => {
+                e.stopImmediatePropagation();
+            }, 0);
             
             // Remove all selections
             editItems.forEach(item => item.classList.remove('selected'));
@@ -1369,12 +1386,20 @@ function initCharacterEditModal() {
                 else if (navigator.vibrate) navigator.vibrate(20);
             } catch(_) {}
         });
+        
+        // Дополнительная защита - предотвращаем всплытие события
+        resetBtn.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
+        
+        resetBtn.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+        });
     }
 
     // Accept button handler
     if (acceptBtn) {
         acceptBtn.addEventListener('click', (e) => {
-            e.preventDefault();
             e.stopPropagation();
             
             const selectedItems = modal.querySelectorAll('.edit-item.selected');
@@ -1409,6 +1434,12 @@ function initCharacterEditModal() {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            // Дополнительная защита от всплытия события
+            setTimeout(() => {
+                e.stopImmediatePropagation();
+            }, 0);
             
             const type = item.getAttribute('data-type');
             
@@ -1431,6 +1462,11 @@ function initCharacterEditModal() {
     // Touch/swipe support for carousels - исправляем логику свайпов
     const carouselElements = modal.querySelectorAll('.items-carousel');
     carouselElements.forEach(carousel => {
+        // Prevent modal from closing when clicking on carousel
+        carousel.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
         const track = carousel.querySelector('.carousel-track');
         let startX = 0;
         let currentX = 0;
@@ -1519,7 +1555,7 @@ function initCharacterEditModal() {
         }, { passive: true });
     });
 
-    // Swipe to close (like settings modal) - исправляем логику свайпа
+    // Swipe to close (like settings modal)
     let startY = 0;
     let currentY = 0;
 
@@ -1545,54 +1581,6 @@ function initCharacterEditModal() {
             content.style.transform = 'translateY(0)';
         }
     }, { passive: true });
-
-    // Добавляем поддержку свайпа для граббера через mouse events (для десктопа)
-    const grabber = modal.querySelector('.sheet-grabber');
-    if (grabber) {
-        let isMouseDown = false;
-        let mouseStartY = 0;
-        let mouseCurrentY = 0;
-
-        grabber.addEventListener('mousedown', (e) => {
-            isMouseDown = true;
-            mouseStartY = e.clientY;
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isMouseDown) return;
-            
-            mouseCurrentY = e.clientY;
-            const diff = mouseCurrentY - mouseStartY;
-            
-            if (diff > 50) {
-                content.style.transform = `translateY(${Math.min(diff, 100)}px)`;
-            }
-        });
-
-        document.addEventListener('mouseup', () => {
-            if (!isMouseDown) return;
-            
-            const diff = mouseCurrentY - mouseStartY;
-            
-            if (diff > 100) {
-                closeCharacterEditModal();
-            } else {
-                content.style.transform = 'translateY(0)';
-            }
-            
-            isMouseDown = false;
-        });
-
-        // Добавляем визуальную обратную связь для граббера
-        grabber.addEventListener('mousedown', () => {
-            grabber.style.background = 'rgba(255,255,255,0.6)';
-        });
-
-        document.addEventListener('mouseup', () => {
-            grabber.style.background = 'rgba(255,255,255,0.3)';
-        });
-    }
 
     // Telegram Back Button handler
     try {
@@ -2059,7 +2047,7 @@ async function init3DCoin() {
             // Даже при ошибке скрываем экран загрузки - ВРЕМЕННО ОТКЛЮЧЕНО
             // updateLoadingProgress(4, 'Готово!');
             // setTimeout(() => {
-            //     hideLoadingProgress();
+            //     hideLoadingScreen();
             // }, 500);
         });
 
