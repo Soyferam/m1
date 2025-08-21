@@ -1330,10 +1330,10 @@ function initCharacterEditModal() {
     const acceptBtn = modal.querySelector('.accept-btn');
     const editItems = modal.querySelectorAll('.edit-item');
 
-    // Close modal handlers
+    // Close modal handlers - исправляем логику закрытия
     modal.addEventListener('click', (e) => {
-        // Закрываем модальное окно только при клике на overlay, а не на его содержимое
-        if (e.target === modal && !e.target.closest('.character-edit-content')) {
+        // Закрываем модальное окно только при клике на overlay (фон), а не на его содержимое
+        if (e.target === modal) {
             closeCharacterEditModal();
         }
     });
@@ -1342,10 +1342,28 @@ function initCharacterEditModal() {
     if (backBtn) {
         backBtn.addEventListener('click', closeCharacterEditModal);
     }
+    
+    // Prevent modal from closing when clicking on header content
+    const header = modal.querySelector('.sheet-header');
+    if (header) {
+        header.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+    
+    // Prevent modal from closing when clicking on section headers
+    const sectionHeaders = modal.querySelectorAll('.edit-subtitle');
+    sectionHeaders.forEach(header => {
+        header.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    });
 
     // Reset button handler
     if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
+        resetBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
             // Remove all selections
             editItems.forEach(item => item.classList.remove('selected'));
             showNotification('Настройки сброшены');
@@ -1359,7 +1377,9 @@ function initCharacterEditModal() {
 
     // Accept button handler
     if (acceptBtn) {
-        acceptBtn.addEventListener('click', () => {
+        acceptBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
             const selectedItems = modal.querySelectorAll('.edit-item.selected');
             if (selectedItems.length === 0) {
                 showNotification('Выберите хотя бы один предмет');
@@ -1392,6 +1412,7 @@ function initCharacterEditModal() {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
             
             const type = item.getAttribute('data-type');
             
@@ -1402,11 +1423,6 @@ function initCharacterEditModal() {
             
             // Toggle selection for clicked item
             item.classList.toggle('selected');
-            
-            // Предотвращаем всплытие события, чтобы модальное окно не закрывалось
-            setTimeout(() => {
-                e.stopImmediatePropagation();
-            }, 0);
             
             try {
                 const tg = window.Telegram && window.Telegram.WebApp;
@@ -1419,6 +1435,11 @@ function initCharacterEditModal() {
     // Touch/swipe support for carousels - исправляем логику свайпов
     const carouselElements = modal.querySelectorAll('.items-carousel');
     carouselElements.forEach(carousel => {
+        // Prevent modal from closing when clicking on carousel
+        carousel.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
         const track = carousel.querySelector('.carousel-track');
         let startX = 0;
         let currentX = 0;
@@ -1968,7 +1989,7 @@ async function init3DCoin() {
             loader.setMeshoptDecoder(MeshoptDecoder);
         }
         let loaded = false;
-        updateLoadingProgress(3, 'Загрузка 3D монетки...');
+        // updateLoadingProgress(3, 'Загрузка 3D монетки...'); // ВРЕМЕННО ОТКЛЮЧЕНО
         loader.load(url, (gltf) => {
             loaded = true;
             model = gltf.scene;
@@ -2253,6 +2274,14 @@ function initHelpModal() {
 
     let currentStep = 0;
 
+    // Preload all help images for instant switching
+    const helpImages = {};
+    helpSteps.forEach((step, index) => {
+        const img = new Image();
+        img.src = step.image;
+        helpImages[index] = img;
+    });
+
     function showStep(step) {
         if (step < 0 || step >= helpSteps.length) return;
         
@@ -2264,7 +2293,13 @@ function initHelpModal() {
             // Последний шаг - показываем и картинку, и Lottie снизу
             helpImage.style.display = 'block';
             helpLottie.style.display = 'block';
-            helpImage.src = stepData.image;
+            
+            // Используем предзагруженное изображение для мгновенного переключения
+            if (helpImages[step] && helpImages[step].complete) {
+                helpImage.src = helpImages[step].src;
+            } else {
+                helpImage.src = stepData.image;
+            }
             
             // Инициализируем Lottie если еще не инициализирована
             if (!helpLottie.hasAttribute('data-lottie-loaded')) {
@@ -2292,7 +2327,13 @@ function initHelpModal() {
             // Обычные шаги - показываем только изображение
             helpImage.style.display = 'block';
             helpLottie.style.display = 'none';
-            helpImage.src = stepData.image;
+            
+            // Используем предзагруженное изображение для мгновенного переключения
+            if (helpImages[step] && helpImages[step].complete) {
+                helpImage.src = helpImages[step].src;
+            } else {
+                helpImage.src = stepData.image;
+            }
         }
         
         helpText.textContent = stepData.text;
