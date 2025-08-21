@@ -1522,60 +1522,28 @@ function initCharacterEditModal() {
     // Swipe to close (like settings modal) - исправляем логику свайпа
     let startY = 0;
     let currentY = 0;
-    let isSwipeDown = false;
 
     modal.addEventListener('touchstart', (e) => {
-        // Начинаем отслеживание свайпа только если касание началось на граббере или заголовке
-        const target = e.target;
-        if (target.closest('.sheet-grabber') || target.closest('.sheet-header')) {
-            startY = e.touches[0].clientY;
-            isSwipeDown = true;
-        } else {
-            isSwipeDown = false;
-        }
+        startY = e.touches[0].clientY;
     }, { passive: true });
 
     modal.addEventListener('touchmove', (e) => {
-        if (!isSwipeDown) return;
-        
         currentY = e.touches[0].clientY;
         const diff = currentY - startY;
         
-        if (diff > 0) { // Swipe down
-            // Плавно двигаем контент вниз
-            content.style.transform = `translateY(${Math.min(diff, 200)}px)`;
-            // Добавляем прозрачность для плавного исчезновения
-            const opacity = Math.max(0.3, 1 - (diff / 200));
-            content.style.opacity = opacity;
+        if (diff > 50) { // Swipe down
+            content.style.transform = `translateY(${Math.min(diff, 100)}px)`;
         }
     }, { passive: true });
 
     modal.addEventListener('touchend', () => {
-        if (!isSwipeDown) return;
-        
         const diff = currentY - startY;
         
         if (diff > 100) { // Swipe down threshold
-            // Плавно закрываем модал
-            content.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-            content.style.transform = 'translateY(100%)';
-            content.style.opacity = '0';
-            
-            setTimeout(() => {
-                closeCharacterEditModal();
-            }, 300);
+            closeCharacterEditModal();
         } else {
-            // Возвращаем на место с анимацией
-            content.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
             content.style.transform = 'translateY(0)';
-            content.style.opacity = '1';
-            
-            setTimeout(() => {
-                content.style.transition = '';
-            }, 300);
         }
-        
-        isSwipeDown = false;
     }, { passive: true });
 
     // Добавляем поддержку свайпа для граббера через mouse events (для десктопа)
@@ -1597,12 +1565,8 @@ function initCharacterEditModal() {
             mouseCurrentY = e.clientY;
             const diff = mouseCurrentY - mouseStartY;
             
-            if (diff > 0) {
-                // Плавно двигаем контент вниз
-                content.style.transform = `translateY(${Math.min(diff, 200)}px)`;
-                // Добавляем прозрачность для плавного исчезновения
-                const opacity = Math.max(0.3, 1 - (diff / 200));
-                content.style.opacity = opacity;
+            if (diff > 50) {
+                content.style.transform = `translateY(${Math.min(diff, 100)}px)`;
             }
         });
 
@@ -1612,23 +1576,9 @@ function initCharacterEditModal() {
             const diff = mouseCurrentY - mouseStartY;
             
             if (diff > 100) {
-                // Плавно закрываем модал
-                content.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-                content.style.transform = 'translateY(100%)';
-                content.style.opacity = '0';
-                
-                setTimeout(() => {
-                    closeCharacterEditModal();
-                }, 300);
+                closeCharacterEditModal();
             } else {
-                // Возвращаем на место с анимацией
-                content.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
                 content.style.transform = 'translateY(0)';
-                content.style.opacity = '1';
-                
-                setTimeout(() => {
-                    content.style.transition = '';
-                }, 300);
             }
             
             isMouseDown = false;

@@ -2320,6 +2320,8 @@ input, textarea {
     padding: 8px 16px 16px !important;
     max-height: 85vh !important;
     overflow: auto !important;
+    /* Добавляем transition для плавного свайпа */
+    transition: transform 0.1s ease-out !important;
 }
 
 #character-edit-modal[style*="display: block"] {
