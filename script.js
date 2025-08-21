@@ -510,8 +510,8 @@ function initSettingsButton() {
     // Свайп вниз для закрытия
     let startY = 0, dy = 0, dragging = false;
     sheet.addEventListener('touchstart', (e) => { if (!e.touches.length) return; dragging = true; startY = e.touches[0].clientY; dy = 0; }, { passive: true });
-    sheet.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) sheet.style.transform = `translateY(${dy}px)`; }, { passive: true });
-    sheet.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) closeSettingsModal(); sheet.style.transform = ''; }, { passive: true });
+    sheet.addEventListener('touchmove', (e) => { if (!dragging) return; dy = e.touches[0].clientY - startY; if (dy > 0) content.style.transform = `translateY(${dy}px)`; }, { passive: true });
+    sheet.addEventListener('touchend', () => { if (!dragging) return; dragging = false; if (dy > 80) closeSettingsModal(); content.style.transform = ''; }, { passive: true });
     // Telegram Back Button
     try {
         const tg = window.Telegram && window.Telegram.WebApp;
@@ -1519,6 +1519,7 @@ function initCharacterEditModal() {
         if (target.closest('.sheet-grabber') || target.closest('.sheet-header')) {
             startY = e.touches[0].clientY;
             isSwipeDown = true;
+            console.log('Swipe started on grabber/header');
         } else {
             isSwipeDown = false;
         }
@@ -1539,6 +1540,7 @@ function initCharacterEditModal() {
         if (!isSwipeDown) return;
         
         const diff = currentY - startY;
+        console.log('Swipe ended, diff:', diff);
         
         if (diff > 100) { // Swipe down threshold
             closeCharacterEditModal();
@@ -1548,6 +1550,56 @@ function initCharacterEditModal() {
         
         isSwipeDown = false;
     }, { passive: true });
+
+    // Добавляем поддержку свайпа для граббера через mouse events (для десктопа)
+    const grabber = modal.querySelector('.sheet-grabber');
+    if (grabber) {
+        let isMouseDown = false;
+        let mouseStartY = 0;
+        let mouseCurrentY = 0;
+
+        grabber.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            mouseStartY = e.clientY;
+            console.log('Mouse down on grabber');
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isMouseDown) return;
+            
+            mouseCurrentY = e.clientY;
+            const diff = mouseCurrentY - mouseStartY;
+            
+            if (diff > 50) {
+                content.style.transform = `translateY(${Math.min(diff, 100)}px)`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (!isMouseDown) return;
+            
+            const diff = mouseCurrentY - mouseStartY;
+            console.log('Mouse up on grabber, diff:', diff);
+            
+            if (diff > 100) {
+                closeCharacterEditModal();
+            } else {
+                content.style.transform = 'translateY(0)';
+            }
+            
+            isMouseDown = false;
+        });
+
+        // Добавляем визуальную обратную связь для граббера
+        grabber.addEventListener('mousedown', () => {
+            grabber.style.background = 'rgba(255,255,255,0.6)';
+        });
+
+        document.addEventListener('mouseup', () => {
+            grabber.style.background = 'rgba(255,255,255,0.3)';
+        });
+    }
 
     // Telegram Back Button handler
     try {

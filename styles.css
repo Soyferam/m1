@@ -1749,49 +1749,24 @@ input, textarea {
 }
 
 .reset-btn {
-    background: rgba(255, 59, 48, 0.2);
-    border: 1px solid rgba(255, 59, 48, 0.4);
-    color: #ff3b30;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     padding: 8px 16px;
-    border-radius: 12px;
+    border-radius: 20px;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-    /* Обеспечиваем, что кнопка не закрывает модал */
-    z-index: 10;
-}
-
-.reset-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s ease;
-}
-
-.reset-btn:hover::before {
-    left: 100%;
-}
-
-.reset-btn:hover,
-.reset-btn:active {
-    background: rgba(255, 59, 48, 0.3);
-    border-color: rgba(255, 59, 48, 0.6);
-    transform: scale(0.98) translateZ(0);
+    transition: all 0.2s ease;
 }
 
 .reset-btn:hover {
-    background: rgba(255, 59, 48, 0.4);
-    box-shadow: 0 4px 15px rgba(255, 59, 48, 0.3);
-    transform: scale(0.98) translateZ(0);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.reset-btn:active {
+    transform: scale(0.95);
 }
 
 .edit-section {
@@ -2344,6 +2319,51 @@ input, textarea {
     pointer-events: auto !important;
 }
 
+/* Улучшенный граббер для модального окна редактирования */
+#character-edit-modal .sheet-grabber {
+    width: 48px !important;
+    height: 5px !important;
+    border-radius: 3px !important;
+    background: rgba(255,255,255,0.3) !important;
+    margin: 6px auto 10px !important;
+    cursor: grab !important;
+    transition: background 0.2s ease !important;
+    /* Увеличиваем touch target для мобильных устройств */
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    /* Добавляем невидимую область для лучшего touch */
+    position: relative !important;
+}
+
+#character-edit-modal .sheet-grabber::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48px;
+    height: 5px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+#character-edit-modal .sheet-grabber:hover::before {
+    background: rgba(255,255,255,0.5);
+}
+
+#character-edit-modal .sheet-grabber:active::before {
+    background: rgba(255,255,255,0.6);
+}
+
+/* Улучшаем заголовок для лучшего touch взаимодействия */
+#character-edit-modal .sheet-header {
+    min-height: 44px !important;
+    padding: 8px 0 !important;
+}
+
 /* Edit sections and items */
 .edit-section {
     margin: 20px 0;
@@ -2361,6 +2381,7 @@ input, textarea {
     position: relative;
     overflow: hidden;
     margin-bottom: 20px;
+    padding: 8px 0; /* Добавляем отступы сверху и снизу */
 }
 
 .carousel-container {
@@ -2372,7 +2393,7 @@ input, textarea {
     display: flex;
     gap: 12px;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 0 16px;
+    padding: 8px 16px; /* Увеличиваем отступы сверху и снизу */
 }
 
 .edit-item {
@@ -2385,6 +2406,7 @@ input, textarea {
     padding: 12px 8px;
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid transparent;
+    margin: 4px 0; /* Добавляем отступы сверху и снизу */
 }
 
 .edit-item:hover {
@@ -2412,54 +2434,4 @@ input, textarea {
     font-weight: 500;
     color: #fff;
     display: block;
-}
-
-/* Edit actions */
-.edit-actions {
-    margin-top: 24px;
-    text-align: center;
-}
-
-.accept-btn {
-    background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-    color: #fff;
-    border: none;
-    padding: 16px 32px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
-}
-
-.accept-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 212, 255, 0.4);
-}
-
-.accept-btn:active {
-    transform: translateY(0);
-}
-
-/* Reset button */
-.reset-btn {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.reset-btn:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.reset-btn:active {
-    transform: scale(0.95);
 }
