@@ -1848,12 +1848,12 @@ input, textarea {
     -webkit-overflow-scrolling: touch;
     /* Ensure proper sizing */
     min-width: 0;
-    /* Add scroll indicator with softer blue glow */
+    /* Очень мягкое синее свечение по бокам карусели */
     background: linear-gradient(90deg, 
-        rgba(0, 212, 255, 0.08) 0%, 
-        transparent 20%, 
-        transparent 80%, 
-        rgba(0, 212, 255, 0.08) 100%);
+        rgba(0, 212, 255, 0.04) 0%, 
+        transparent 25%, 
+        transparent 75%, 
+        rgba(0, 212, 255, 0.04) 100%);
     border-radius: 8px;
     width: 100%;
     /* Добавляем отступы для лучшего отображения градиентов */
@@ -1906,8 +1906,8 @@ input, textarea {
     /* Ensure proper rendering */
     will-change: transform;
     transform: translateZ(0);
-    /* Мягкое синее свечение по бокам, ограниченное границами карточки */
-    box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.08);
+    /* Очень мягкое синее свечение по бокам, ограниченное границами карточки */
+    box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.05);
     /* Гарантируем, что свечение не выходит за границы */
     isolation: isolate;
 }
@@ -1932,7 +1932,7 @@ input, textarea {
 
 .edit-item:hover {
     transform: translateY(-4px) translateZ(0);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(0, 212, 255, 0.15);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(0, 212, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1940,7 +1940,7 @@ input, textarea {
 .edit-item.selected {
     border-color: #00d4ff;
     background: rgba(0, 212, 255, 0.1);
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2), 0 0 0 2px rgba(0, 212, 255, 0.25);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.15), 0 0 0 2px rgba(0, 212, 255, 0.2);
     transform: scale(1.05) translateZ(0);
     animation: selectedPulse 2s ease-in-out infinite;
     position: relative;
@@ -2103,10 +2103,10 @@ input, textarea {
     
     .carousel-container {
         background: linear-gradient(90deg, 
-            rgba(0, 212, 255, 0.06) 0%, 
-            transparent 15%, 
-            transparent 85%, 
-            rgba(0, 212, 255, 0.06) 100%);
+            rgba(0, 212, 255, 0.03) 0%, 
+            transparent 25%, 
+            transparent 75%, 
+            rgba(0, 212, 255, 0.03) 100%);
         padding: 2px 0;
     }
     
@@ -2126,17 +2126,26 @@ input, textarea {
         margin-top: 16px;
     }
     
-    /* Убеждаемся, что свечение одинаковое на мобильных */
+    /* Убеждаемся, что свечение одинаковое на мобильных для всех секций */
     .edit-item {
-        box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.06);
+        box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.04) !important;
     }
     
     .edit-item:hover {
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 0 2px rgba(0, 212, 255, 0.12);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 0 2px rgba(0, 212, 255, 0.08) !important;
     }
     
     .edit-item.selected {
-        box-shadow: 0 0 12px rgba(0, 212, 255, 0.18), 0 0 0 2px rgba(0, 212, 255, 0.2);
+        box-shadow: 0 0 12px rgba(0, 212, 255, 0.15), 0 0 0 2px rgba(0, 212, 255, 0.18) !important;
+    }
+    
+    /* Убеждаемся, что карусели имеют одинаковое свечение */
+    .carousel-container {
+        background: linear-gradient(90deg, 
+            rgba(0, 212, 255, 0.03) 0%, 
+            transparent 25%, 
+            transparent 75%, 
+            rgba(0, 212, 255, 0.03) 100%) !important;
     }
 }
 
@@ -2182,10 +2191,10 @@ input, textarea {
 /* Selected Item Pulse Animation */
 @keyframes selectedPulse {
     0%, 100% {
-        box-shadow: 0 0 15px rgba(0, 212, 255, 0.2), 0 0 0 2px rgba(0, 212, 255, 0.25);
+        box-shadow: 0 0 12px rgba(0, 212, 255, 0.15), 0 0 0 2px rgba(0, 212, 255, 0.2);
     }
     50% {
-        box-shadow: 0 0 20px rgba(0, 212, 255, 0.25), 0 0 0 2px rgba(0, 212, 255, 0.3);
+        box-shadow: 0 0 16px rgba(0, 212, 255, 0.18), 0 0 0 2px rgba(0, 212, 255, 0.22);
     }
 }
 
@@ -2271,4 +2280,31 @@ input, textarea {
 .app-container {
     opacity: 1;
     transition: opacity 0.5s ease-in;
+}
+
+/* Специфические стили для разных секций каруселей, чтобы гарантировать одинаковое свечение */
+.edit-section:first-of-type .carousel-container,
+.edit-section:last-of-type .carousel-container {
+    /* Одинаковое очень мягкое свечение для всех секций */
+    background: linear-gradient(90deg, 
+        rgba(0, 212, 255, 0.04) 0%, 
+        transparent 25%, 
+        transparent 75%, 
+        rgba(0, 212, 255, 0.04) 100%) !important;
+}
+
+.edit-section:first-of-type .edit-item,
+.edit-section:last-of-type .edit-item {
+    /* Одинаковое очень мягкое свечение для всех карточек */
+    box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.05) !important;
+}
+
+.edit-section:first-of-type .edit-item:hover,
+.edit-section:last-of-type .edit-item:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(0, 212, 255, 0.1) !important;
+}
+
+.edit-section:first-of-type .edit-item.selected,
+.edit-section:last-of-type .edit-item.selected {
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.15), 0 0 0 2px rgba(0, 212, 255, 0.2) !important;
 }
