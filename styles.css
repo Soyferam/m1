@@ -1138,8 +1138,8 @@ input, textarea {
 }
 
 .coin-stage {
-    width: min(48vw, 220px);
-    height: min(48vw, 220px); /* квадрат, меньше прежнего */
+    width: 150px;
+    height: 150px; /* как у .lb-cup .lottie */
     border-radius: 20px;
     background: transparent; /* прозрачный фон, рендерер с alpha */
     position: relative;
