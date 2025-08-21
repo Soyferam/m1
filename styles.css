@@ -1848,12 +1848,8 @@ input, textarea {
     -webkit-overflow-scrolling: touch;
     /* Ensure proper sizing */
     min-width: 0;
-    /* Очень мягкое синее свечение по бокам карусели */
-    background: linear-gradient(90deg, 
-        rgba(0, 212, 255, 0.04) 0%, 
-        transparent 25%, 
-        transparent 75%, 
-        rgba(0, 212, 255, 0.04) 100%);
+    /* Убираем свечение по бокам карусели полностью */
+    background: transparent;
     border-radius: 8px;
     width: 100%;
     /* Добавляем отступы для лучшего отображения градиентов */
@@ -2102,11 +2098,7 @@ input, textarea {
     }
     
     .carousel-container {
-        background: linear-gradient(90deg, 
-            rgba(0, 212, 255, 0.03) 0%, 
-            transparent 25%, 
-            transparent 75%, 
-            rgba(0, 212, 255, 0.03) 100%);
+        background: transparent;
         padding: 2px 0;
     }
     
@@ -2139,13 +2131,9 @@ input, textarea {
         box-shadow: 0 0 12px rgba(0, 212, 255, 0.15), 0 0 0 2px rgba(0, 212, 255, 0.18) !important;
     }
     
-    /* Убеждаемся, что карусели имеют одинаковое свечение */
+    /* Убираем свечение по бокам карусели на мобильных */
     .carousel-container {
-        background: linear-gradient(90deg, 
-            rgba(0, 212, 255, 0.03) 0%, 
-            transparent 25%, 
-            transparent 75%, 
-            rgba(0, 212, 255, 0.03) 100%) !important;
+        background: transparent !important;
     }
 }
 
@@ -2282,29 +2270,4 @@ input, textarea {
     transition: opacity 0.5s ease-in;
 }
 
-/* Специфические стили для разных секций каруселей, чтобы гарантировать одинаковое свечение */
-.edit-section:first-of-type .carousel-container,
-.edit-section:last-of-type .carousel-container {
-    /* Одинаковое очень мягкое свечение для всех секций */
-    background: linear-gradient(90deg, 
-        rgba(0, 212, 255, 0.04) 0%, 
-        transparent 25%, 
-        transparent 75%, 
-        rgba(0, 212, 255, 0.04) 100%) !important;
-}
-
-.edit-section:first-of-type .edit-item,
-.edit-section:last-of-type .edit-item {
-    /* Одинаковое очень мягкое свечение для всех карточек */
-    box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.05) !important;
-}
-
-.edit-section:first-of-type .edit-item:hover,
-.edit-section:last-of-type .edit-item:hover {
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(0, 212, 255, 0.1) !important;
-}
-
-.edit-section:first-of-type .edit-item.selected,
-.edit-section:last-of-type .edit-item.selected {
-    box-shadow: 0 0 12px rgba(0, 212, 255, 0.15), 0 0 0 2px rgba(0, 212, 255, 0.2) !important;
-}
+/* Убираем специфические стили - свечение по бокам карусели полностью отключено */
