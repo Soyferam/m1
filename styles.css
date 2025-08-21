@@ -1848,17 +1848,17 @@ input, textarea {
     -webkit-overflow-scrolling: touch;
     /* Ensure proper sizing */
     min-width: 0;
-    /* Add scroll indicator with blue glow */
+    /* Add scroll indicator with softer blue glow */
     background: linear-gradient(90deg, 
-        rgba(0, 212, 255, 0.15) 0%, 
+        rgba(0, 212, 255, 0.08) 0%, 
         transparent 20%, 
         transparent 80%, 
-        rgba(0, 212, 255, 0.15) 100%);
+        rgba(0, 212, 255, 0.08) 100%);
     border-radius: 8px;
     width: 100%;
     /* Добавляем отступы для лучшего отображения градиентов */
     padding: 4px 0;
-    /* Убираем overflow для лучшего контроля */
+    /* Ограничиваем overflow для контроля свечения */
     overflow: hidden;
 }
 
@@ -1906,8 +1906,10 @@ input, textarea {
     /* Ensure proper rendering */
     will-change: transform;
     transform: translateZ(0);
-    /* Добавляем синее свечение по бокам для всех карточек */
-    box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.1);
+    /* Мягкое синее свечение по бокам, ограниченное границами карточки */
+    box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.08);
+    /* Гарантируем, что свечение не выходит за границы */
+    isolation: isolate;
 }
 
 .edit-item::before {
@@ -1930,7 +1932,7 @@ input, textarea {
 
 .edit-item:hover {
     transform: translateY(-4px) translateZ(0);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(0, 212, 255, 0.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(0, 212, 255, 0.15);
     border-color: rgba(255, 255, 255, 0.2);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1938,7 +1940,7 @@ input, textarea {
 .edit-item.selected {
     border-color: #00d4ff;
     background: rgba(0, 212, 255, 0.1);
-    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 0 2px rgba(0, 212, 255, 0.4);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.2), 0 0 0 2px rgba(0, 212, 255, 0.25);
     transform: scale(1.05) translateZ(0);
     animation: selectedPulse 2s ease-in-out infinite;
     position: relative;
@@ -2101,10 +2103,10 @@ input, textarea {
     
     .carousel-container {
         background: linear-gradient(90deg, 
-            rgba(0, 212, 255, 0.1) 0%, 
+            rgba(0, 212, 255, 0.06) 0%, 
             transparent 15%, 
             transparent 85%, 
-            rgba(0, 212, 255, 0.1) 100%);
+            rgba(0, 212, 255, 0.06) 100%);
         padding: 2px 0;
     }
     
@@ -2122,6 +2124,19 @@ input, textarea {
     .edit-actions {
         padding: 20px 0 12px;
         margin-top: 16px;
+    }
+    
+    /* Убеждаемся, что свечение одинаковое на мобильных */
+    .edit-item {
+        box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.06);
+    }
+    
+    .edit-item:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 0 2px rgba(0, 212, 255, 0.12);
+    }
+    
+    .edit-item.selected {
+        box-shadow: 0 0 12px rgba(0, 212, 255, 0.18), 0 0 0 2px rgba(0, 212, 255, 0.2);
     }
 }
 
@@ -2167,10 +2182,10 @@ input, textarea {
 /* Selected Item Pulse Animation */
 @keyframes selectedPulse {
     0%, 100% {
-        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.2), 0 0 0 2px rgba(0, 212, 255, 0.25);
     }
     50% {
-        box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.25), 0 0 0 2px rgba(0, 212, 255, 0.3);
     }
 }
 
