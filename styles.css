@@ -1309,6 +1309,14 @@ input, textarea {
     --progress-bar-width: 0px;
     --progress-bar-opacity: 0;
     --progress-bar-visibility: hidden;
+    /* Настройки для равномерного отображения */
+    --camera-orbit: 0deg 75deg 120%;
+    --min-camera-orbit: auto 75deg 80%;
+    --max-camera-orbit: auto 75deg 200%;
+    /* Убираем искажения перспективы */
+    --field-of-view: auto;
+    --min-field-of-view: auto;
+    --max-field-of-view: auto;
 }
 
 /* Убираем стили для fallback изображений */

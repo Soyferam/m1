@@ -1903,9 +1903,6 @@ async function init3DCoin() {
     // Работаем только с 3D моделями, убираем проверку на изображения
 
     try {
-        console.log('Initializing 3D coin with model-viewer...');
-        console.log('Stage element:', stage);
-        
         // Настройка чувствительности под устройство и размер сцены
         const isCoarsePointer = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || 'ontouchstart' in window;
         const baseSensY = 0.0045;
@@ -1920,8 +1917,6 @@ async function init3DCoin() {
         const sensY = baseSensY * (isCoarsePointer ? 1.8 : 1.0) * sizeFactor;
         const sensX = baseSensX * (isCoarsePointer ? 1.6 : 1.0) * sizeFactor;
         const clampX = 1.35;
-        
-        console.log('Sensitivity settings:', { isCoarsePointer, sensY, sensX, clampX });
 
         // Лёгкий импульс вращения - теперь только для автоповорота
         const kickSpin = (strength = 1) => {
@@ -1940,25 +1935,17 @@ async function init3DCoin() {
             isDown = true;
             lastX = (e.touches ? e.touches[0].clientX : e.clientX);
             lastY = (e.touches ? e.touches[0].clientY : e.clientY);
-            console.log('Touch started:', { isDown, lastX, lastY });
             if (e.cancelable) e.preventDefault(); 
             e.stopPropagation(); 
         };
         
         const onMoveStop = (e) => { 
-            if (!isDown) {
-                console.log('Touch move blocked: isDown = false');
-                return;
-            }
+            if (!isDown) return;
             
             // Получаем model-viewer разными способами
             const modelViewer = stage.modelViewer || stage.querySelector('model-viewer') || stage;
             
-            if (!modelViewer || modelViewer.cameraOrbit === undefined) {
-                console.log('Touch move blocked: no modelViewer or cameraOrbit');
-                console.log('Model viewer:', modelViewer);
-                return;
-            }
+            if (!modelViewer || modelViewer.cameraOrbit === undefined) return;
             
             const cx = (e.touches ? e.touches[0].clientX : e.clientX);
             const cy = (e.touches ? e.touches[0].clientY : e.clientY);
@@ -1966,27 +1953,19 @@ async function init3DCoin() {
             const dy = cy - lastY;
             lastX = cx; lastY = cy;
             
-            console.log('Touch move:', { dx, dy, isDown, hasModelViewer: !!modelViewer });
-            
             // Вращаем монетку вокруг своей оси при свайпах
             const gain = isCoarsePointer ? 1.25 : 1.1;
             velY = dx * sensY;
             velX = dy * sensX;
             
-            console.log('Velocity calculated:', { velX, velY, gain });
-            
             // Получаем текущую позицию камеры
             const currentOrbit = modelViewer.cameraOrbit;
-            console.log('Current orbit:', currentOrbit);
-            
             const match = currentOrbit.match(/(-?\d+(?:\.\d+)?)deg\s+(-?\d+(?:\.\d+)?)deg\s+(\d+(?:\.\d+)?)%/);
             
             if (match) {
                 let currentTheta = parseFloat(match[1]);
                 let currentPhi = parseFloat(match[2]);
                 const currentRadius = match[3];
-                
-                console.log('Parsed values:', { currentTheta, currentPhi, currentRadius });
                 
                 // Вращаем только вокруг вертикальной оси (theta) - горизонтальные свайпы
                 // Инвертируем направление для естественного ощущения
@@ -1996,16 +1975,12 @@ async function init3DCoin() {
                 // currentPhi остается неизменным
                 
                 const newOrbit = `${currentTheta.toFixed(1)}deg ${currentPhi.toFixed(1)}deg ${currentRadius}%`;
-                console.log('New orbit:', newOrbit);
                 
                 try {
                     modelViewer.cameraOrbit = newOrbit;
-                    console.log('Camera orbit updated successfully');
                 } catch (error) {
                     console.error('Failed to update camera orbit:', error);
                 }
-            } else {
-                console.log('Failed to parse orbit:', currentOrbit);
             }
             
             lastInputAt = performance.now();
@@ -2022,9 +1997,6 @@ async function init3DCoin() {
         stage.addEventListener('touchmove', onMoveStop, { passive: false });
         stage.addEventListener('wheel', onWheelStop, { passive: false });
         window.addEventListener('touchend', () => { isDown = false; lastInputAt = performance.now(); }, { passive: true });
-        
-        console.log('Event listeners attached to stage:', stage);
-        console.log('Touch events should now work for rotation');
 
         // Анимация инерции для плавного вращения после свайпа
         function animate() {
@@ -2055,7 +2027,7 @@ async function init3DCoin() {
             }
             
             // Возвращаемся к центру при простоя - более плавно
-            const idleMs = performance.now() - lastInputAt;
+                const idleMs = performance.now() - lastInputAt;
             if (idleMs > 300) { // Увеличиваем задержку для более плавного возврата
                 const t = Math.min((idleMs - 300) / 800, 1); // Увеличиваем время анимации
                 
@@ -2093,21 +2065,10 @@ async function init3DCoin() {
 
         // Обработчик загрузки модели
         stage.addEventListener('load', () => {
-            console.log('Model loaded successfully');
-            
-            // Проверяем, что model-viewer доступен
-            console.log('Stage element properties:', Object.getOwnPropertyNames(stage));
-            console.log('Stage element prototype:', Object.getPrototypeOf(stage));
-            console.log('Stage element constructor:', stage.constructor.name);
-            
             // Проверяем разные способы доступа к model-viewer
             const modelViewer = stage.modelViewer || stage.querySelector('model-viewer') || stage;
-            console.log('Model viewer found:', modelViewer);
             
             if (modelViewer && modelViewer.cameraOrbit !== undefined) {
-                console.log('Model viewer is available:', modelViewer);
-                console.log('Initial camera orbit:', modelViewer.cameraOrbit);
-                
                 // Сохраняем ссылку на model-viewer
                 stage.modelViewer = modelViewer;
                 
@@ -2116,6 +2077,11 @@ async function init3DCoin() {
                 modelViewer.style.setProperty('--progress-bar-width', '0px');
                 modelViewer.style.setProperty('--progress-bar-opacity', '0');
                 modelViewer.style.setProperty('--progress-bar-visibility', 'hidden');
+                
+                // Настраиваем естественную перспективу для равномерного отображения
+                modelViewer.style.setProperty('--field-of-view', 'auto');
+                modelViewer.style.setProperty('--min-field-of-view', 'auto');
+                modelViewer.style.setProperty('--max-field-of-view', 'auto');
                 
                 // Принудительно скрываем элементы через Shadow DOM
                 setTimeout(() => {
@@ -2134,28 +2100,10 @@ async function init3DCoin() {
                             });
                         }
                     } catch (e) {
-                        console.log('Shadow DOM access failed:', e);
+                        // Shadow DOM access failed - это нормально
                     }
                 }, 100);
-                
-                // Тестируем вращение через 2 секунды
-                setTimeout(() => {
-                    if (modelViewer && modelViewer.cameraOrbit !== undefined) {
-                        console.log('Testing rotation...');
-                        const testOrbit = '45deg 75deg 120%';
-                        modelViewer.cameraOrbit = testOrbit;
-                        console.log('Test rotation applied:', testOrbit);
-                        console.log('Current orbit after test:', modelViewer.cameraOrbit);
-                    }
-                }, 2000);
-                
-            } else {
-                console.error('Model viewer is not available!');
-                console.log('Available properties:', Object.getOwnPropertyNames(stage));
             }
-            
-            // Монетка остается в фиксированной позиции при загрузке
-            console.log('Model loaded - coin stays in fixed position');
         });
 
         // Обработчик ошибки загрузки - просто логируем
@@ -2193,20 +2141,20 @@ async function init3DCoin() {
     if (!navItems.length) return;
     navItems.forEach((btn, idx) => {
         btn.addEventListener('click', () => {
-                            if (idx === rewardsBtnIndex) {
-                    init3DCoin();
-                    const stage = document.getElementById('coin-stage');
+            if (idx === rewardsBtnIndex) {
+                init3DCoin();
+                const stage = document.getElementById('coin-stage');
                     if (stage && stage.modelViewer) {
                         // небольшая задержка для пересчёта размеров model-viewer
-                        setTimeout(() => {
+                    setTimeout(() => {
                             if (stage.modelViewer) {
                                 stage.modelViewer.requestUpdate();
                                 // Устанавливаем начальную позицию, но позволяем вращение
                                 stage.modelViewer.cameraOrbit = '0deg 75deg 120%';
                             }
                         }, 100);
-                    }
                 }
+            }
         });
     });
 })();
