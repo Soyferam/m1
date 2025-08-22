@@ -1304,15 +1304,11 @@ input, textarea {
     --poster-color: transparent;
     --progress-bar-color: transparent;
     --progress-mask: transparent;
-    /* Убираем все тени и темные элементы */
-    --shadow-color: transparent;
-    --shadow-intensity: 0;
-    --shadow-softness: 0;
-    filter: brightness(1.1) contrast(1.1);
-    /* Увеличиваем маску сверху для убирания черной тени */
-    clip-path: inset(-10px -10px -10px -10px);
-    transform: scale(1.1);
-    transform-origin: center center;
+    /* Убираем полоску загрузки */
+    --progress-bar-height: 0px;
+    --progress-bar-width: 0px;
+    --progress-bar-opacity: 0;
+    --progress-bar-visibility: hidden;
 }
 
 /* Убираем стили для fallback изображений */
@@ -1320,42 +1316,51 @@ input, textarea {
     display: none !important;
 }
 
-/* Дополнительные стили для убирания темных элементов */
-.coin-stage model-viewer::part(default-progress-bar) {
+/* Скрываем стандартные элементы загрузки model-viewer */
+.coin-stage model-viewer::part(progress-bar),
+.coin-stage model-viewer::part(progress-mask),
+.coin-stage model-viewer::part(poster) {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
 }
 
-.coin-stage model-viewer::part(default-progress-mask) {
-    display: none !important;
-}
-
-.coin-stage model-viewer::part(interaction-prompt) {
-    display: none !important;
-}
-
-/* Убираем любые темные оверлеи */
-.coin-stage model-viewer::before,
-.coin-stage model-viewer::after {
-    display: none !important;
-}
-
-/* Дополнительные стили для убирания черной тени сверху */
+/* Дополнительно скрываем через CSS переменные */
 .coin-stage model-viewer {
-    overflow: visible !important;
+    --progress-bar-height: 0px !important;
+    --progress-bar-width: 0px !important;
+    --progress-bar-opacity: 0 !important;
+    --progress-bar-visibility: hidden !important;
 }
 
-.coin-stage model-viewer canvas {
-    margin-top: -10px !important;
-    margin-bottom: -10px !important;
-    margin-left: -10px !important;
-    margin-right: -10px !important;
+/* Максимально скрываем все элементы загрузки */
+.coin-stage model-viewer [slot="progress-bar"],
+.coin-stage model-viewer [slot="progress-mask"],
+.coin-stage model-viewer [slot="poster"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
 }
 
-/* Убираем любые темные границы или рамки */
-.coin-stage model-viewer * {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
+/* Скрываем через CSS части с максимальным приоритетом */
+.coin-stage model-viewer::part(progress-bar),
+.coin-stage model-viewer::part(progress-mask),
+.coin-stage model-viewer::part(poster) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
 }
 
 /* Rewards view positioning for coin under top bar */

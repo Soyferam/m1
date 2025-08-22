@@ -1903,6 +1903,9 @@ async function init3DCoin() {
     // Работаем только с 3D моделями, убираем проверку на изображения
 
     try {
+        console.log('Initializing 3D coin with model-viewer...');
+        console.log('Stage element:', stage);
+        
         // Настройка чувствительности под устройство и размер сцены
         const isCoarsePointer = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || 'ontouchstart' in window;
         const baseSensY = 0.0045;
@@ -1917,18 +1920,13 @@ async function init3DCoin() {
         const sensY = baseSensY * (isCoarsePointer ? 1.8 : 1.0) * sizeFactor;
         const sensX = baseSensX * (isCoarsePointer ? 1.6 : 1.0) * sizeFactor;
         const clampX = 1.35;
+        
+        console.log('Sensitivity settings:', { isCoarsePointer, sensY, sensX, clampX });
 
-        // Лёгкий импульс вращения
+        // Лёгкий импульс вращения - теперь только для автоповорота
         const kickSpin = (strength = 1) => {
-            if (stage.modelViewer) {
-                const currentRotation = stage.modelViewer.getCameraOrbit();
-                const newRotation = {
-                    ...currentRotation,
-                    theta: currentRotation.theta + (0.022 * strength),
-                    phi: Math.max(-clampX, Math.min(clampX, currentRotation.phi + (0.004 * strength)))
-                };
-                stage.modelViewer.cameraOrbit = `${newRotation.theta}rad ${newRotation.phi}rad ${newRotation.radius}m`;
-            }
+            // Убираем импульс - монетка остается в фиксированной позиции
+            console.log('Spin impulse disabled - coin stays in fixed position');
         };
 
         // Инициализация model-viewer
@@ -1942,30 +1940,72 @@ async function init3DCoin() {
             isDown = true;
             lastX = (e.touches ? e.touches[0].clientX : e.clientX);
             lastY = (e.touches ? e.touches[0].clientY : e.clientY);
+            console.log('Touch started:', { isDown, lastX, lastY });
             if (e.cancelable) e.preventDefault(); 
             e.stopPropagation(); 
         };
         
         const onMoveStop = (e) => { 
-            if (!isDown || !stage.modelViewer) return;
+            if (!isDown) {
+                console.log('Touch move blocked: isDown = false');
+                return;
+            }
+            
+            // Получаем model-viewer разными способами
+            const modelViewer = stage.modelViewer || stage.querySelector('model-viewer') || stage;
+            
+            if (!modelViewer || modelViewer.cameraOrbit === undefined) {
+                console.log('Touch move blocked: no modelViewer or cameraOrbit');
+                console.log('Model viewer:', modelViewer);
+                return;
+            }
+            
             const cx = (e.touches ? e.touches[0].clientX : e.clientX);
             const cy = (e.touches ? e.touches[0].clientY : e.clientY);
             const dx = cx - lastX;
             const dy = cy - lastY;
             lastX = cx; lastY = cy;
             
-            // Более высокая отзывчивость на мобильных/коурс-поинтерах
+            console.log('Touch move:', { dx, dy, isDown, hasModelViewer: !!modelViewer });
+            
+            // Вращаем монетку вокруг своей оси при свайпах
             const gain = isCoarsePointer ? 1.25 : 1.1;
             velY = dx * sensY;
             velX = dy * sensX;
             
-            const currentRotation = stage.modelViewer.getCameraOrbit();
-            const newRotation = {
-                ...currentRotation,
-                theta: currentRotation.theta + (velY * gain),
-                phi: Math.max(-clampX, Math.min(clampX, currentRotation.phi + (velX * gain)))
-            };
-            stage.modelViewer.cameraOrbit = `${newRotation.theta}rad ${newRotation.phi}rad ${newRotation.radius}m`;
+            console.log('Velocity calculated:', { velX, velY, gain });
+            
+            // Получаем текущую позицию камеры
+            const currentOrbit = modelViewer.cameraOrbit;
+            console.log('Current orbit:', currentOrbit);
+            
+            const match = currentOrbit.match(/(-?\d+(?:\.\d+)?)deg\s+(-?\d+(?:\.\d+)?)deg\s+(\d+(?:\.\d+)?)%/);
+            
+            if (match) {
+                let currentTheta = parseFloat(match[1]);
+                let currentPhi = parseFloat(match[2]);
+                const currentRadius = match[3];
+                
+                console.log('Parsed values:', { currentTheta, currentPhi, currentRadius });
+                
+                // Вращаем только вокруг вертикальной оси (theta) - горизонтальные свайпы
+                currentTheta += (velY * gain) * 57.3; // конвертируем радианы в градусы
+                
+                // Ограничиваем наклон (phi) - вертикальные свайпы
+                currentPhi = Math.max(60, Math.min(90, currentPhi + (velX * gain) * 57.3));
+                
+                const newOrbit = `${currentTheta.toFixed(1)}deg ${currentPhi.toFixed(1)}deg ${currentRadius}%`;
+                console.log('New orbit:', newOrbit);
+                
+                try {
+                    modelViewer.cameraOrbit = newOrbit;
+                    console.log('Camera orbit updated successfully');
+                } catch (error) {
+                    console.error('Failed to update camera orbit:', error);
+                }
+            } else {
+                console.log('Failed to parse orbit:', currentOrbit);
+            }
             
             lastInputAt = performance.now();
             if (e.cancelable) e.preventDefault(); 
@@ -1981,44 +2021,57 @@ async function init3DCoin() {
         stage.addEventListener('touchmove', onMoveStop, { passive: false });
         stage.addEventListener('wheel', onWheelStop, { passive: false });
         window.addEventListener('touchend', () => { isDown = false; lastInputAt = performance.now(); }, { passive: true });
+        
+        console.log('Event listeners attached to stage:', stage);
+        console.log('Touch events should now work for rotation');
 
-        // Анимация инерции
+        // Анимация инерции для плавного вращения после свайпа
         function animate() {
             requestAnimationFrame(animate);
-            if (!stage.modelViewer) return;
             
-            // чуть сильнее демпфирование — меньше инерции/"супер-отзывчивости"
+            // Получаем model-viewer разными способами
+            const modelViewer = stage.modelViewer || stage.querySelector('model-viewer') || stage;
+            if (!modelViewer || modelViewer.cameraOrbit === undefined) return;
+            
+            // Демпфирование для плавности
             velX *= 0.975;
             velY *= 0.98;
             
-            const currentRotation = stage.modelViewer.getCameraOrbit();
-            const newRotation = {
-                ...currentRotation,
-                theta: currentRotation.theta + velY,
-                phi: Math.max(-clampX, Math.min(clampX, currentRotation.phi + velX))
-            };
-            stage.modelViewer.cameraOrbit = `${newRotation.theta}rad ${newRotation.phi}rad ${newRotation.radius}m`;
+            // Применяем инерцию к вращению
+            const currentOrbit = modelViewer.cameraOrbit;
+            const match = currentOrbit.match(/(-?\d+(?:\.\d+)?)deg\s+(-?\d+(?:\.\d+)?)deg\s+(\d+(?:\.\d+)?)%/);
             
-                const idleMs = performance.now() - lastInputAt;
-                if (idleMs > 250) {
-                    const t = Math.min((idleMs - 250) / 500, 1);
-                    const ease = 1 - Math.pow(1 - t, 3);
-                    const k = 0.11 * ease; // ещё быстрее начинаем возвращать к центру
-                    velX *= 0.9; velY *= 0.9;
+            if (match) {
+                let currentTheta = parseFloat(match[1]);
+                let currentPhi = parseFloat(match[2]);
+                const currentRadius = match[3];
                 
-                const targetRotation = {
-                    ...currentRotation,
-                    theta: 0,
-                    phi: 0
-                };
+                // Применяем инерцию
+                currentTheta += velY * 57.3;
+                currentPhi = Math.max(60, Math.min(90, currentPhi + velX * 57.3));
                 
-                const interpolatedRotation = {
-                    ...currentRotation,
-                    theta: currentRotation.theta + (targetRotation.theta - currentRotation.theta) * k,
-                    phi: currentRotation.phi + (targetRotation.phi - currentRotation.phi) * k
-                };
+                modelViewer.cameraOrbit = `${currentTheta.toFixed(1)}deg ${currentPhi.toFixed(1)}deg ${currentRadius}%`;
+            }
+            
+            // Возвращаемся к центру при простоя
+            const idleMs = performance.now() - lastInputAt;
+            if (idleMs > 250) {
+                const t = Math.min((idleMs - 250) / 500, 1);
+                const ease = 1 - Math.pow(1 - t, 3);
+                const k = 0.11 * ease;
+                velX *= 0.9; velY *= 0.9;
                 
-                stage.modelViewer.cameraOrbit = `${interpolatedRotation.theta}rad ${interpolatedRotation.phi}rad ${interpolatedRotation.radius}m`;
+                if (match) {
+                    let currentTheta = parseFloat(match[1]);
+                    let currentPhi = parseFloat(match[2]);
+                    const currentRadius = match[3];
+                    
+                    // Возвращаемся к центру
+                    currentTheta += (0 - currentTheta) * k;
+                    currentPhi += (75 - currentPhi) * k; // возвращаемся к 75 градусам
+                    
+                    modelViewer.cameraOrbit = `${currentTheta.toFixed(1)}deg ${currentTheta.toFixed(1)}deg ${currentRadius}%`;
+                }
                 
                 if (Math.abs(velX) < 0.002) velX = 0;
                 if (Math.abs(velY) < 0.002) velY = 0;
@@ -2030,28 +2083,67 @@ async function init3DCoin() {
         stage.addEventListener('load', () => {
             console.log('Model loaded successfully');
             
-            // Принудительно отключаем тени и увеличиваем маску
-            if (stage.modelViewer) {
-                stage.modelViewer.shadowIntensity = 0;
-                stage.modelViewer.shadowSoftness = 0;
-                // Убираем любые темные оверлеи
-                stage.modelViewer.style.setProperty('--shadow-color', 'transparent');
-                stage.modelViewer.style.setProperty('--shadow-intensity', '0');
-                stage.modelViewer.style.setProperty('--shadow-softness', '0');
+            // Проверяем, что model-viewer доступен
+            console.log('Stage element properties:', Object.getOwnPropertyNames(stage));
+            console.log('Stage element prototype:', Object.getPrototypeOf(stage));
+            console.log('Stage element constructor:', stage.constructor.name);
+            
+            // Проверяем разные способы доступа к model-viewer
+            const modelViewer = stage.modelViewer || stage.querySelector('model-viewer') || stage;
+            console.log('Model viewer found:', modelViewer);
+            
+            if (modelViewer && modelViewer.cameraOrbit !== undefined) {
+                console.log('Model viewer is available:', modelViewer);
+                console.log('Initial camera orbit:', modelViewer.cameraOrbit);
                 
-                // Увеличиваем маску сверху для убирания черной тени
-                stage.modelViewer.style.setProperty('clip-path', 'inset(-15px -15px -15px -15px)');
-                stage.modelViewer.style.setProperty('transform', 'scale(1.15)');
-                stage.modelViewer.style.setProperty('transform-origin', 'center center');
+                // Сохраняем ссылку на model-viewer
+                stage.modelViewer = modelViewer;
                 
-                // Убираем любые темные элементы
-                stage.modelViewer.style.setProperty('overflow', 'visible');
-                stage.modelViewer.style.setProperty('box-shadow', 'none');
-                stage.modelViewer.style.setProperty('border', 'none');
+                // Убираем полоску загрузки программно
+                modelViewer.style.setProperty('--progress-bar-height', '0px');
+                modelViewer.style.setProperty('--progress-bar-width', '0px');
+                modelViewer.style.setProperty('--progress-bar-opacity', '0');
+                modelViewer.style.setProperty('--progress-bar-visibility', 'hidden');
+                
+                // Принудительно скрываем элементы через Shadow DOM
+                setTimeout(() => {
+                    try {
+                        const shadowRoot = modelViewer.shadowRoot;
+                        if (shadowRoot) {
+                            const progressElements = shadowRoot.querySelectorAll(
+                                '[slot="progress-bar"], [slot="progress-mask"], .progress-bar, .progress-mask'
+                            );
+                            progressElements.forEach(el => {
+                                el.style.display = 'none';
+                                el.style.visibility = 'hidden';
+                                el.style.opacity = '0';
+                                el.style.height = '0';
+                                el.style.width = '0';
+                            });
+                        }
+                    } catch (e) {
+                        console.log('Shadow DOM access failed:', e);
+                    }
+                }, 100);
+                
+                // Тестируем вращение через 2 секунды
+                setTimeout(() => {
+                    if (modelViewer && modelViewer.cameraOrbit !== undefined) {
+                        console.log('Testing rotation...');
+                        const testOrbit = '45deg 75deg 120%';
+                        modelViewer.cameraOrbit = testOrbit;
+                        console.log('Test rotation applied:', testOrbit);
+                        console.log('Current orbit after test:', modelViewer.cameraOrbit);
+                    }
+                }, 2000);
+                
+            } else {
+                console.error('Model viewer is not available!');
+                console.log('Available properties:', Object.getOwnPropertyNames(stage));
             }
             
-            // стартовый мягкий проворот при загрузке
-            kickSpin(1);
+            // Монетка остается в фиксированной позиции при загрузке
+            console.log('Model loaded - coin stays in fixed position');
         });
 
         // Обработчик ошибки загрузки - просто логируем
@@ -2066,8 +2158,8 @@ async function init3DCoin() {
             const hidden = rewardsView.getAttribute('aria-hidden') === 'true';
             stage.style.visibility = hidden ? 'hidden' : 'visible';
             if (!hidden) {
-                // при входе на вкладку — лёгкий автопроворот
-                kickSpin(0.8);
+                // при входе на вкладку — монетка остается в фиксированной позиции
+                console.log('Tab switched - coin stays in fixed position');
             }
         });
         visibilityObserver.observe(rewardsView, { attributes: true, attributeFilter: ['aria-hidden'] });
@@ -2089,18 +2181,20 @@ async function init3DCoin() {
     if (!navItems.length) return;
     navItems.forEach((btn, idx) => {
         btn.addEventListener('click', () => {
-            if (idx === rewardsBtnIndex) {
-                init3DCoin();
-                const stage = document.getElementById('coin-stage');
-                if (stage && stage.modelViewer) {
-                    // небольшая задержка для пересчёта размеров model-viewer
-                    setTimeout(() => {
-                        if (stage.modelViewer) {
-                            stage.modelViewer.requestUpdate();
-                        }
-                    }, 100);
+                            if (idx === rewardsBtnIndex) {
+                    init3DCoin();
+                    const stage = document.getElementById('coin-stage');
+                    if (stage && stage.modelViewer) {
+                        // небольшая задержка для пересчёта размеров model-viewer
+                        setTimeout(() => {
+                            if (stage.modelViewer) {
+                                stage.modelViewer.requestUpdate();
+                                // Устанавливаем начальную позицию, но позволяем вращение
+                                stage.modelViewer.cameraOrbit = '0deg 75deg 120%';
+                            }
+                        }, 100);
+                    }
                 }
-            }
         });
     });
 })();
