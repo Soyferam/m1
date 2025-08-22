@@ -1989,10 +1989,11 @@ async function init3DCoin() {
                 console.log('Parsed values:', { currentTheta, currentPhi, currentRadius });
                 
                 // Вращаем только вокруг вертикальной оси (theta) - горизонтальные свайпы
-                currentTheta += (velY * gain) * 57.3; // конвертируем радианы в градусы
+                // Инвертируем направление для естественного ощущения
+                currentTheta -= (velY * gain) * 57.3; // конвертируем радианы в градусы
                 
-                // Ограничиваем наклон (phi) - вертикальные свайпы
-                currentPhi = Math.max(60, Math.min(90, currentPhi + (velX * gain) * 57.3));
+                // Убираем изменение наклона - phi остается фиксированным
+                // currentPhi остается неизменным
                 
                 const newOrbit = `${currentTheta.toFixed(1)}deg ${currentPhi.toFixed(1)}deg ${currentRadius}%`;
                 console.log('New orbit:', newOrbit);
@@ -2033,9 +2034,9 @@ async function init3DCoin() {
             const modelViewer = stage.modelViewer || stage.querySelector('model-viewer') || stage;
             if (!modelViewer || modelViewer.cameraOrbit === undefined) return;
             
-            // Демпфирование для плавности
-            velX *= 0.975;
-            velY *= 0.98;
+            // Демпфирование для плавности - более мягкое
+            velX *= 0.98;
+            velY *= 0.985;
             
             // Применяем инерцию к вращению
             const currentOrbit = modelViewer.cameraOrbit;
@@ -2046,35 +2047,46 @@ async function init3DCoin() {
                 let currentPhi = parseFloat(match[2]);
                 const currentRadius = match[3];
                 
-                // Применяем инерцию
-                currentTheta += velY * 57.3;
-                currentPhi = Math.max(60, Math.min(90, currentPhi + velX * 57.3));
+                // Применяем инерцию только для горизонтального вращения
+                currentTheta -= velY * 57.3;
+                // currentPhi остается неизменным - убираем наклон
                 
                 modelViewer.cameraOrbit = `${currentTheta.toFixed(1)}deg ${currentPhi.toFixed(1)}deg ${currentRadius}%`;
             }
             
-            // Возвращаемся к центру при простоя
+            // Возвращаемся к центру при простоя - более плавно
             const idleMs = performance.now() - lastInputAt;
-            if (idleMs > 250) {
-                const t = Math.min((idleMs - 250) / 500, 1);
-                const ease = 1 - Math.pow(1 - t, 3);
-                const k = 0.11 * ease;
-                velX *= 0.9; velY *= 0.9;
+            if (idleMs > 300) { // Увеличиваем задержку для более плавного возврата
+                const t = Math.min((idleMs - 300) / 800, 1); // Увеличиваем время анимации
+                
+                // Более плавная кривая с плавным началом
+                const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                const k = 0.06 * ease; // Еще более медленная скорость возврата
+                
+                // Плавно гасим скорость
+                velX *= 0.97;
+                velY *= 0.97;
                 
                 if (match) {
                     let currentTheta = parseFloat(match[1]);
                     let currentPhi = parseFloat(match[2]);
                     const currentRadius = match[3];
                     
-                    // Возвращаемся к центру
-                    currentTheta += (0 - currentTheta) * k;
-                    currentPhi += (75 - currentPhi) * k; // возвращаемся к 75 градусам
+                    // Возвращаемся к центру более плавно
+                    const targetTheta = 0; // Целевая позиция по горизонтали
+                    // targetPhi остается фиксированным - убираем изменение наклона
                     
-                    modelViewer.cameraOrbit = `${currentTheta.toFixed(1)}deg ${currentTheta.toFixed(1)}deg ${currentRadius}%`;
+                    currentTheta += (targetTheta - currentTheta) * k;
+                    // currentPhi остается неизменным - убираем наклон
+                    
+                    modelViewer.cameraOrbit = `${currentTheta.toFixed(1)}deg ${currentPhi.toFixed(1)}deg ${currentRadius}%`;
                 }
                 
-                if (Math.abs(velX) < 0.002) velX = 0;
-                if (Math.abs(velY) < 0.002) velY = 0;
+                // Полностью останавливаем движение только когда очень близко к цели
+                if (Math.abs(velX) < 0.001 && Math.abs(velY) < 0.001) {
+                    velX = 0;
+                    velY = 0;
+                }
             }
         }
         animate();
